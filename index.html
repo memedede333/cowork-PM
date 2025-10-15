@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pôle Mission - Brainstorming Collaboratif</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2C3E50;
+            --secondary: #3498DB;
+            --accent: #E74C3C;
+            --success: #27AE60;
+            --warning: #F39C12;
+            --bg-light: #ECF0F1;
+            --bg-dark: #34495E;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+            --border: #BDC3C7;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            color: var(--text-dark);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .app-header {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .app-header p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .session-badge {
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.2);
+        }
+
+        .session-code {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #27AE60;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px var(--shadow);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--bg-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: #2980B9;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+            width: auto;
+        }
+
+        .category-manager {
+            background: var(--bg-light);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .category-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .category-tag {
+            background: var(--primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .category-tag button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .add-category-form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-category-form input {
+            flex: 1;
+            padding: 8px 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid var(--secondary);
+            box-shadow: 0 3px 10px var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .ideas-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .ideas-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .ideas-container::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 10px;
+        }
+
+        .ideas-container::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 10px;
+        }
+
+        .idea-card {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .idea-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+
+        .idea-card.grouped {
+            border-left-color: var(--accent);
+            background: #FEF5E7;
+        }
+
+        .idea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .idea-author {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .idea-category {
+            background: var(--secondary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .idea-content {
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .idea-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .idea-time {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        .idea-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .group-btn {
+            background: var(--warning);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .group-btn:hover {
+            background: #E67E22;
+        }
+
+        .group-section {
+            background: #FEF5E7;
+            border: 2px dashed var(--warning);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .group-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .participants-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .participant-tag {
+            background: white;
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 2px solid var(--primary);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-section input,
+        .filter-section select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .export-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: var(--bg-light);
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-dark);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .mode-btn.active {
+            background: white;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            animation: slideUpToast 0.5s ease;
+            z-index: 1000;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.warning {
+            background: var(--warning);
+        }
+
+        @keyframes slideUpToast {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            z-index: 100;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-dot.offline {
+            background: var(--accent);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .app-header h1 {
+                font-size: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-section {
+                flex-direction: column;
+            }
+
+            .export-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Hors ligne</span>
+    </div>
+
+    <div class="container">
+        <div class="app-header">
+            <h1>🎯 Pôle Mission</h1>
+            <p>Brainstorming Collaboratif</p>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="card">
+            <h2 style="margin-bottom: 20px; color: var(--primary);">Rejoindre une session</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" id="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Code session (laisser vide pour créer)</label>
+                    <input type="text" id="sessionInput" maxlength="6" style="text-transform: uppercase;">
+                </div>
+                
+                <div id="sessionCreatorOptions" class="hidden">
+                    <div class="form-group">
+                        <label>⚙️ Personnaliser les catégories</label>
+                        <div class="category-manager">
+                            <div class="category-list" id="categoryList">
+                                <span class="category-tag">Général <button onclick="removeCategory(this)">×</button></span>
+                                <span class="category-tag">Innovation <button onclick="removeCategory(this)">×</button></span>
+                                <span class="category-tag">Amélioration <button onclick="removeCategory(this)">×</button></span>
+                                <span class="category-tag">Problème <button onclick="removeCategory(this)">×</button></span>
+                                <span class="category-tag">Solution <button onclick="removeCategory(this)">×</button></span>
+                            </div>
+                            <div class="add-category-form">
+                                <input type="text" id="newCategory" placeholder="Nouvelle catégorie">
+                                <button type="button" class="btn btn-small btn-secondary" onclick="addCategory()">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">
+                    <span>🚀</span>
+                    <span>Démarrer</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="hidden">
+            <div class="session-badge">
+                <div>
+                    <div class="session-code" id="sessionCode">XXXXX</div>
+                    <small style="opacity: 0.9;">Code de session</small>
+                </div>
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    <span id="participantCount">1</span> en ligne
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="totalIdeas">0</span>
+                    <span class="stat-label">Idées</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="totalParticipants">0</span>
+                    <span class="stat-label">Participants</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="totalGroups">0</span>
+                    <span class="stat-label">Groupes</span>
+                </div>
+            </div>
+
+            <!-- Mode Selector -->
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="switchMode('ideas')">💡 Idées</button>
+                <button class="mode-btn" onclick="switchMode('groups')">🎯 Groupes</button>
+                <button class="mode-btn" onclick="switchMode('participants')">👥 Participants</button>
+            </div>
+
+            <!-- Ideas Mode -->
+            <div id="ideasMode">
+                <!-- Add Idea Form -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">Ajouter une idée</h3>
+                    <form onsubmit="handleAddIdea(event)">
+                        <div class="form-group">
+                            <select id="category">
+                                <!-- Will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="ideaContent" placeholder="Votre idée..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <span>💡</span>
+                            <span>Partager l'idée</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <input type="text" id="searchInput" placeholder="🔍 Rechercher..." oninput="filterIdeas()">
+                    <select id="filterCategory" onchange="filterIdeas()">
+                        <!-- Will be populated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Ideas List -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">Flux d'idées</h3>
+                    <div id="ideasContainer" class="ideas-container">
+                        <p style="text-align: center; color: var(--text-light);">Aucune idée pour le moment...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groups Mode -->
+            <div id="groupsMode" class="hidden">
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">Groupes d'idées similaires</h3>
+                    <div id="groupsContainer">
+                        <p style="text-align: center; color: var(--text-light);">Aucun groupe créé pour le moment...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants Mode -->
+            <div id="participantsMode" class="hidden">
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">Participants actifs</h3>
+                    <div id="participantsList" class="participants-list"></div>
+                </div>
+            </div>
+
+            <!-- Export Section -->
+            <div class="export-section">
+                <button onclick="exportJSON()" class="btn btn-secondary">
+                    <span>📥</span>
+                    <span>JSON</span>
+                </button>
+                <button onclick="exportCSV()" class="btn btn-secondary">
+                    <span>📊</span>
+                    <span>CSV</span>
+                </button>
+                <button onclick="exportText()" class="btn btn-secondary">
+                    <span>📝</span>
+                    <span>Texte</span>
+                </button>
+                <button onclick="saveToLocalStorage()" class="btn btn-success">
+                    <span>💾</span>
+                    <span>Sauvegarder</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Configuration Firebase pour Pôle Mission
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRJzayhxMtvijL_944zMPtMEMU8zUXRaE",
+            authDomain: "coworking-67676.firebaseapp.com",
+            databaseURL: "https://coworking-67676-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "coworking-67676",
+            storageBucket: "coworking-67676.firebasestorage.app",
+            messagingSenderId: "132701423535",
+            appId: "1:132701423535:web:d10b9bc0f68bf089d0515a",
+            measurementId: "G-79784W76EY"
+        };
+
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getDatabase, ref, push, set, get, onValue, off, child, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js';
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const analytics = getAnalytics(app);
+        
+        // Make Firebase available globally
+        window.firebaseDB = { 
+            database, 
+            ref, 
+            push, 
+            set, 
+            get,
+            onValue, 
+            off,
+            child,
+            update,
+            remove
+        };
+        
+        console.log('✅ Firebase connecté avec succès!');
+    </script>
+
+    <script>
+        // App State
+        let appState = {
+            currentUser: null,
+            sessionCode: null,
+            ideas: [],
+            participants: new Set(),
+            groups: [],
+            categories: ['Général', 'Innovation', 'Amélioration', 'Problème', 'Solution'],
+            isCreator: false,
+            mode: 'ideas',
+            connected: false
+        };
+
+        let groupingMode = false;
+        let selectedIdeasForGroup = new Set();
+
+        // Initialize
+        document.getElementById('sessionInput').addEventListener('input', function(e) {
+            const isEmpty = e.target.value.trim() === '';
+            document.getElementById('sessionCreatorOptions').classList.toggle('hidden', !isEmpty);
+            if (isEmpty) {
+                appState.isCreator = true;
+            }
+        });
+
+        // Load from localStorage on startup
+        window.addEventListener('load', () => {
+            loadFromLocalStorage();
+        });
+
+        // Session Management
+        function generateSessionCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const sessionInput = document.getElementById('sessionInput').value.trim();
+            
+            appState.currentUser = {
+                firstName,
+                lastName,
+                fullName: `${firstName} ${lastName}`,
+                joinedAt: new Date().toISOString()
+            };
+            
+            if (!sessionInput) {
+                appState.isCreator = true;
+                appState.sessionCode = generateSessionCode();
+                // Get custom categories if creator
+                const categoryTags = document.querySelectorAll('#categoryList .category-tag');
+                appState.categories = Array.from(categoryTags).map(tag => 
+                    tag.textContent.replace('×', '').trim()
+                );
+            } else {
+                appState.sessionCode = sessionInput.toUpperCase();
+                // Load existing session from localStorage or Firebase
+                loadSession(appState.sessionCode);
+            }
+            
+            appState.participants.add(appState.currentUser.fullName);
+            
+            // Initialize Firebase connection if available
+            initializeRealtimeConnection();
+            
+            // Update UI
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('sessionCode').textContent = appState.sessionCode;
+            
+            populateCategories();
+            updateStats();
+            updateParticipantsList();
+            showToast(`Bienvenue ${firstName} !`, 'success');
+            
+            // Save to localStorage
+            saveToLocalStorage();
+        }
+
+        // Category Management
+        function addCategory() {
+            const input = document.getElementById('newCategory');
+            const category = input.value.trim();
+            
+            if (category && !appState.categories.includes(category)) {
+                const categoryList = document.getElementById('categoryList');
+                const tag = document.createElement('span');
+                tag.className = 'category-tag';
+                tag.innerHTML = `${category} <button onclick="removeCategory(this)">×</button>`;
+                categoryList.appendChild(tag);
+                input.value = '';
+            }
+        }
+
+        function removeCategory(button) {
+            button.parentElement.remove();
+        }
+
+        function populateCategories() {
+            const categorySelect = document.getElementById('category');
+            const filterSelect = document.getElementById('filterCategory');
+            
+            categorySelect.innerHTML = appState.categories.map(cat => 
+                `<option value="${cat}">${cat}</option>`
+            ).join('');
+            
+            filterSelect.innerHTML = '<option value="">Toutes catégories</option>' + 
+                appState.categories.map(cat => 
+                    `<option value="${cat}">${cat}</option>`
+                ).join('');
+        }
+
+        // Ideas Management
+        function handleAddIdea(event) {
+            event.preventDefault();
+            
+            const category = document.getElementById('category').value;
+            const content = document.getElementById('ideaContent').value.trim();
+            
+            if (!content) return;
+            
+            const idea = {
+                id: Date.now() + Math.random(),
+                author: appState.currentUser.fullName,
+                category,
+                content,
+                timestamp: new Date().toISOString(),
+                groupId: null
+            };
+            
+            appState.ideas.push(idea);
+            
+            // Clear form
+            document.getElementById('ideaContent').value = '';
+            
+            // Update UI
+            renderIdeas();
+            updateStats();
+            showToast('Idée ajoutée !', 'success');
+            
+            // Save and sync
+            saveToLocalStorage();
+            syncToFirebase('ideas', idea);
+        }
+
+        // Render ideas
+        function renderIdeas() {
+            const container = document.getElementById('ideasContainer');
+            const filteredIdeas = getFilteredIdeas();
+            
+            if (filteredIdeas.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-light);">Aucune idée trouvée...</p>';
+                return;
+            }
+            
+            container.innerHTML = filteredIdeas
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .map(idea => `
+                    <div class="idea-card ${idea.groupId ? 'grouped' : ''}" data-id="${idea.id}">
+                        <div class="idea-header">
+                            <span class="idea-author">${idea.author}</span>
+                            <span class="idea-category">${idea.category}</span>
+                        </div>
+                        <div class="idea-content">${escapeHtml(idea.content)}</div>
+                        <div class="idea-footer">
+                            <span class="idea-time">${formatTime(idea.timestamp)}</span>
+                            <div class="idea-actions">
+                                ${!idea.groupId ? `
+                                    <button class="group-btn" onclick="toggleIdeaForGrouping(${idea.id})">
+                                        Grouper
+                                    </button>
+                                ` : `
+                                    <span style="font-size: 11px; color: var(--warning);">
+                                        Groupe #${idea.groupId}
+                                    </span>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // Grouping functionality
+        function toggleIdeaForGrouping(ideaId) {
+            if (selectedIdeasForGroup.has(ideaId)) {
+                selectedIdeasForGroup.delete(ideaId);
+            } else {
+                selectedIdeasForGroup.add(ideaId);
+            }
+            
+            // Update visual state
+            const card = document.querySelector(`[data-id="${ideaId}"]`);
+            card.classList.toggle('grouped');
+            
+            if (selectedIdeasForGroup.size >= 2) {
+                createGroup();
+            }
+        }
+
+        function createGroup() {
+            const groupId = Date.now();
+            const group = {
+                id: groupId,
+                name: `Groupe ${appState.groups.length + 1}`,
+                ideaIds: Array.from(selectedIdeasForGroup),
+                createdBy: appState.currentUser.fullName,
+                createdAt: new Date().toISOString()
+            };
+            
+            appState.groups.push(group);
+            
+            // Update ideas with group ID
+            appState.ideas.forEach(idea => {
+                if (selectedIdeasForGroup.has(idea.id)) {
+                    idea.groupId = groupId;
+                }
+            });
+            
+            selectedIdeasForGroup.clear();
+            
+            renderIdeas();
+            renderGroups();
+            updateStats();
+            showToast('Groupe créé !', 'success');
+            
+            saveToLocalStorage();
+            syncToFirebase('groups', group);
+        }
+
+        function renderGroups() {
+            const container = document.getElementById('groupsContainer');
+            
+            if (appState.groups.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-light);">Aucun groupe créé...</p>';
+                return;
+            }
+            
+            container.innerHTML = appState.groups.map(group => {
+                const groupIdeas = appState.ideas.filter(idea => 
+                    group.ideaIds.includes(idea.id)
+                );
+                
+                return `
+                    <div class="group-section">
+                        <div class="group-header">
+                            <div class="group-title">
+                                <span>🎯</span>
+                                <span>${group.name}</span>
+                                <small style="color: var(--text-light);">(${groupIdeas.length} idées)</small>
+                            </div>
+                            <small style="color: var(--text-light);">
+                                Par ${group.createdBy}
+                            </small>
+                        </div>
+                        <div class="ideas-container" style="max-height: 200px;">
+                            ${groupIdeas.map(idea => `
+                                <div class="idea-card" style="margin-bottom: 10px;">
+                                    <div class="idea-author">${idea.author}</div>
+                                    <div class="idea-content" style="font-size: 13px;">
+                                        ${escapeHtml(idea.content)}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mode switching
+        function switchMode(mode) {
+            appState.mode = mode;
+            
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide sections
+            document.getElementById('ideasMode').classList.toggle('hidden', mode !== 'ideas');
+            document.getElementById('groupsMode').classList.toggle('hidden', mode !== 'groups');
+            document.getElementById('participantsMode').classList.toggle('hidden', mode !== 'participants');
+            
+            if (mode === 'groups') {
+                renderGroups();
+            }
+        }
+
+        // Filter ideas
+        function filterIdeas() {
+            renderIdeas();
+        }
+
+        function getFilteredIdeas() {
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const categoryFilter = document.getElementById('filterCategory')?.value || '';
+            
+            return appState.ideas.filter(idea => {
+                const matchesSearch = !searchTerm || 
+                    idea.content.toLowerCase().includes(searchTerm) ||
+                    idea.author.toLowerCase().includes(searchTerm);
+                const matchesCategory = !categoryFilter || idea.category === categoryFilter;
+                
+                return matchesSearch && matchesCategory;
+            });
+        }
+
+        // Stats update
+        function updateStats() {
+            document.getElementById('totalIdeas').textContent = appState.ideas.length;
+            document.getElementById('totalParticipants').textContent = appState.participants.size;
+            document.getElementById('participantCount').textContent = appState.participants.size;
+            document.getElementById('totalGroups').textContent = appState.groups.length;
+        }
+
+        // Participants list
+        function updateParticipantsList() {
+            const container = document.getElementById('participantsList');
+            container.innerHTML = Array.from(appState.participants)
+                .map(name => `<span class="participant-tag">${name}</span>`)
+                .join('');
+        }
+
+        // Local Storage
+        function saveToLocalStorage() {
+            const dataToSave = {
+                sessionCode: appState.sessionCode,
+                ideas: appState.ideas,
+                participants: Array.from(appState.participants),
+                groups: appState.groups,
+                categories: appState.categories,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            localStorage.setItem(`brainstorming_${appState.sessionCode}`, JSON.stringify(dataToSave));
+            showToast('Sauvegardé localement', 'success');
+        }
+
+        function loadFromLocalStorage() {
+            // Try to load last session
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('brainstorming_'));
+            if (keys.length > 0) {
+                const lastKey = keys[keys.length - 1];
+                const data = JSON.parse(localStorage.getItem(lastKey));
+                if (data && data.lastUpdated) {
+                    // Show option to restore
+                    const daysSince = Math.floor((Date.now() - new Date(data.lastUpdated)) / (1000 * 60 * 60 * 24));
+                    if (daysSince < 7) {
+                        console.log(`Session ${data.sessionCode} trouvée (il y a ${daysSince} jours)`);
+                    }
+                }
+            }
+        }
+
+        function loadSession(sessionCode) {
+            const data = localStorage.getItem(`brainstorming_${sessionCode}`);
+            if (data) {
+                const parsed = JSON.parse(data);
+                appState.ideas = parsed.ideas || [];
+                appState.participants = new Set(parsed.participants || []);
+                appState.groups = parsed.groups || [];
+                appState.categories = parsed.categories || appState.categories;
+                
+                renderIdeas();
+                updateStats();
+                showToast('Session chargée', 'success');
+            }
+        }
+
+        // Firebase Real-time sync (stub)
+        function initializeRealtimeConnection() {
+            // This would connect to Firebase if configured
+            if (window.firebaseDB) {
+                appState.connected = true;
+                updateConnectionStatus(true);
+                // Set up listeners for real-time updates
+                listenForUpdates();
+            } else {
+                // Fallback to localStorage polling for demo
+                setInterval(() => {
+                    loadSession(appState.sessionCode);
+                }, 5000);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function syncToFirebase(type, data) {
+            if (window.firebaseDB) {
+                const { database, ref, push, set } = window.firebaseDB;
+                const updates = {};
+                updates[`/sessions/${appState.sessionCode}/${type}/${data.id}`] = data;
+                set(ref(database), updates);
+            }
+        }
+
+        function listenForUpdates() {
+            if (window.firebaseDB) {
+                const { database, ref, onValue } = window.firebaseDB;
+                const sessionRef = ref(database, `/sessions/${appState.sessionCode}`);
+                
+                onValue(sessionRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        // Update local state with remote data
+                        if (data.ideas) {
+                            appState.ideas = Object.values(data.ideas);
+                            renderIdeas();
+                        }
+                        if (data.participants) {
+                            appState.participants = new Set(Object.values(data.participants));
+                            updateParticipantsList();
+                        }
+                        if (data.groups) {
+                            appState.groups = Object.values(data.groups);
+                            renderGroups();
+                        }
+                        updateStats();
+                    }
+                });
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            if (connected) {
+                dot.classList.remove('offline');
+                text.textContent = 'En ligne';
+            } else {
+                dot.classList.add('offline');
+                text.textContent = 'Mode local';
+            }
+        }
+
+        // Export functions
+        function exportJSON() {
+            const data = {
+                session: appState.sessionCode,
+                exportDate: new Date().toISOString(),
+                participants: Array.from(appState.participants),
+                ideas: appState.ideas,
+                groups: appState.groups,
+                categories: appState.categories,
+                summary: {
+                    totalIdeas: appState.ideas.length,
+                    totalParticipants: appState.participants.size,
+                    totalGroups: appState.groups.length,
+                    ideasByCategory: getCategorySummary(),
+                    ideasByAuthor: getAuthorSummary()
+                }
+            };
+            
+            downloadFile(JSON.stringify(data, null, 2), `pole-mission-${appState.sessionCode}.json`, 'application/json');
+        }
+
+        function exportCSV() {
+            const headers = ['Auteur', 'Catégorie', 'Idée', 'Groupe', 'Date/Heure'];
+            const rows = appState.ideas.map(idea => {
+                const group = appState.groups.find(g => g.ideaIds.includes(idea.id));
+                return [
+                    idea.author,
+                    idea.category,
+                    `"${idea.content.replace(/"/g, '""')}"`,
+                    group ? group.name : '',
+                    formatTime(idea.timestamp)
+                ];
+            });
+            
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+            downloadFile('\ufeff' + csv, `pole-mission-${appState.sessionCode}.csv`, 'text/csv;charset=utf-8');
+        }
+
+        function exportText() {
+            let text = `PÔLE MISSION - BRAINSTORMING COLLABORATIF\n`;
+            text += `${'='.repeat(50)}\n\n`;
+            text += `Session: ${appState.sessionCode}\n`;
+            text += `Date d'export: ${new Date().toLocaleString('fr-FR')}\n`;
+            text += `Participants (${appState.participants.size}): ${Array.from(appState.participants).join(', ')}\n`;
+            text += `Total d'idées: ${appState.ideas.length}\n`;
+            text += `Groupes créés: ${appState.groups.length}\n`;
+            text += '\n' + '='.repeat(50) + '\n';
+            
+            // Ideas by category
+            const categorizedIdeas = {};
+            appState.ideas.forEach(idea => {
+                if (!categorizedIdeas[idea.category]) {
+                    categorizedIdeas[idea.category] = [];
+                }
+                categorizedIdeas[idea.category].push(idea);
+            });
+            
+            text += '\n### IDÉES PAR CATÉGORIE\n\n';
+            for (const [category, ideas] of Object.entries(categorizedIdeas)) {
+                text += `\n${category.toUpperCase()} (${ideas.length} idées)\n${'-'.repeat(30)}\n`;
+                ideas.forEach(idea => {
+                    text += `\n• ${idea.content}\n`;
+                    text += `  Par: ${idea.author} | ${formatTime(idea.timestamp)}\n`;
+                });
+            }
+            
+            // Groups
+            if (appState.groups.length > 0) {
+                text += '\n\n### GROUPES D\'IDÉES SIMILAIRES\n\n';
+                appState.groups.forEach(group => {
+                    text += `\n${group.name}\n${'-'.repeat(30)}\n`;
+                    const groupIdeas = appState.ideas.filter(idea => 
+                        group.ideaIds.includes(idea.id)
+                    );
+                    groupIdeas.forEach(idea => {
+                        text += `• ${idea.content} (${idea.author})\n`;
+                    });
+                });
+            }
+            
+            downloadFile(text, `pole-mission-${appState.sessionCode}.txt`, 'text/plain;charset=utf-8');
+        }
+
+        // Utility functions
+        function getCategorySummary() {
+            const summary = {};
+            appState.ideas.forEach(idea => {
+                summary[idea.category] = (summary[idea.category] || 0) + 1;
+            });
+            return summary;
+        }
+
+        function getAuthorSummary() {
+            const summary = {};
+            appState.ideas.forEach(idea => {
+                summary[idea.author] = (summary[idea.author] || 0) + 1;
+            });
+            return summary;
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Export réussi : ${filename}`, 'success');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
