@@ -156,7 +156,7 @@
         </div>
         <div class="form-group">
           <label>Code session (laisser vide pour créer)</label>
-          <input type="text" id="sessionInput" maxlength="6" style="text-transform: uppercase;">
+          <input type="text" id="sessionInput" maxlength="6" style="text-transform: uppercase;" placeholder="6 caractères A–Z/0–9">
         </div>
 
         <div id="sessionCreatorOptions" class="hidden">
@@ -327,8 +327,9 @@
 
   <!-- App Logic -->
   <script>
+  (function(){
     // ===== Helpers & State =====
-    let appState = {
+    const appState = window.appState || {
       currentUser: null,
       sessionCode: null,
       ideas: [],
@@ -340,7 +341,10 @@
       connected: false,
       status: 'active'
     };
-    let selectedIdeasForGroup = new Set();
+    window.appState = appState; // persist across reloads/hot replace
+
+    const selectedIdeasForGroup = window.selectedIdeasForGroup || new Set();
+    window.selectedIdeasForGroup = selectedIdeasForGroup;
 
     const $ = s => document.querySelector(s);
     const $$ = s => Array.from(document.querySelectorAll(s));
@@ -348,56 +352,47 @@
     const formatTime = ts => new Date(ts).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
     function showToast(message, type='info'){ const toast=document.createElement('div'); toast.className=`toast ${type==='success'?'success':type==='warning'?'warning':''}`; toast.textContent=message; document.body.appendChild(toast); setTimeout(()=>toast.remove(), 4000); }
 
-    function updateConnectionStatus(connected){ const dot=$('#statusDot'); const text=$('#statusText'); if(connected){ dot.classList.remove('offline'); text.textContent='En ligne'; } else { dot.classList.add('offline'); text.textContent='Mode local'; } }
+    function updateConnectionStatus(connected){ const dot=$('#statusDot'); const text=$('#statusText'); if(!dot||!text) return; if(connected){ dot.classList.remove('offline'); text.textContent='En ligne'; } else { dot.classList.add('offline'); text.textContent='Mode local'; } }
     function deviceId(){ const k='pm:deviceId'; let v=localStorage.getItem(k); if(!v){ v='dev_'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10); localStorage.setItem(k,v);} return v; }
     function clientIdFor(code){ const k=`pm:${code}:clientId`; let v=localStorage.getItem(k); if(!v){ v=deviceId(); localStorage.setItem(k,v);} return v; }
 
     // Normalise un code session à 6 caractères alphanum (A–Z/0–9)
-    function normalizeSessionCode(s){
-      return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
-    }
+    function normalizeSessionCode(s){ return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6); }
+    function generateSessionCode(){ return normalizeSessionCode(Math.random().toString(36).toUpperCase()) || 'ABC123'; }
 
-    // Génère un code aléatoire **de 6** caractères
-    function generateSessionCode(){
-      return normalizeSessionCode(Math.random().toString(36).toUpperCase()) || 'ABC123';
-    }
-
-    // Toggle créateur options
-    $('#sessionInput').addEventListener('input', (e)=>{ const isEmpty = e.target.value.trim()===''; $('#sessionCreatorOptions').classList.toggle('hidden', !isEmpty); if(isEmpty) appState.isCreator=true; e.target.value = normalizeSessionCode(e.target.value); });
-
-    // Presence (SDK only)
-    const waitForSDK = setInterval(()=>{ if(window.firebaseDB){ clearInterval(waitForSDK); try{ const { database, ref, onValue } = window.firebaseDB; onValue(ref(database, '.info/connected'), s=>{ updateConnectionStatus(!!s.val()); }); }catch{} } }, 100);
-    let selectedIdeasForGroup = new Set();
-
-    const $ = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
-    const escapeHtml = (t) => (t||'').toString().replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
-    const formatTime = ts => new Date(ts).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
-    function showToast(message, type='info'){ const toast=document.createElement('div'); toast.className=`toast ${type==='success'?'success':type==='warning'?'warning':''}`; toast.textContent=message; document.body.appendChild(toast); setTimeout(()=>toast.remove(), 4000); }
-
-    function updateConnectionStatus(connected){ const dot=$('#statusDot'); const text=$('#statusText'); if(connected){ dot.classList.remove('offline'); text.textContent='En ligne'; } else { dot.classList.add('offline'); text.textContent='Mode local'; } }
-    function deviceId(){ const k='pm:deviceId'; let v=localStorage.getItem(k); if(!v){ v='dev_'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10); localStorage.setItem(k,v);} return v; }
-    function clientIdFor(code){ const k=`pm:${code}:clientId`; let v=localStorage.getItem(k); if(!v){ v=deviceId(); localStorage.setItem(k,v);} return v; }
-
-    // Toggle créateur options
-    $('#sessionInput').addEventListener('input', (e)=>{ const isEmpty = e.target.value.trim()===''; $('#sessionCreatorOptions').classList.toggle('hidden', !isEmpty); if(isEmpty) appState.isCreator=true; });
+    // Toggle créateur options (si présent)
+    (function(){
+      const inp = document.getElementById('sessionInput');
+      if(!inp) return;
+      inp.addEventListener('input', (e)=>{
+        e.target.value = normalizeSessionCode(e.target.value);
+        const isEmpty = e.target.value.trim()==='';
+        const opt = document.getElementById('sessionCreatorOptions');
+        if(opt) opt.classList.toggle('hidden', !isEmpty);
+        if(isEmpty) appState.isCreator=true; else appState.isCreator=false;
+      });
+    })();
 
     // Presence (SDK only)
     const waitForSDK = setInterval(()=>{ if(window.firebaseDB){ clearInterval(waitForSDK); try{ const { database, ref, onValue } = window.firebaseDB; onValue(ref(database, '.info/connected'), s=>{ updateConnectionStatus(!!s.val()); }); }catch{} } }, 100);
 
-    // Login
+    // === Login ===
     async function handleLogin(event){
       event.preventDefault();
-      const firstName = $('#firstName').value.trim();
-      const lastName  = $('#lastName').value.trim();
-      let sessionInput = normalizeSessionCode($('#sessionInput').value.trim());
-      $('#sessionInput').value = sessionInput; // reflète la normalisation
+      const firstNameEl=document.getElementById('firstName');
+      const lastNameEl=document.getElementById('lastName');
+      const codeEl=document.getElementById('sessionInput');
+      if(!firstNameEl||!lastNameEl) return;
+      const firstName = firstNameEl.value.trim();
+      const lastName  = lastNameEl.value.trim();
+      let sessionInput = normalizeSessionCode((codeEl?.value||'').trim());
+      if(codeEl) codeEl.value = sessionInput; // reflète la normalisation
       appState.currentUser = { firstName, lastName, fullName: `${firstName} ${lastName}`, joinedAt: Date.now() };
 
       if(!sessionInput){
         appState.isCreator = true;
         appState.sessionCode = generateSessionCode(); // **toujours 6**
-        const tags = $$('#categoryList .category-tag').map(x=>x.textContent.replace('×','').trim());
+        const tags = Array.from(document.querySelectorAll('#categoryList .category-tag')).map(x=>x.textContent.replace('×','').trim());
         if(tags.length) appState.categories = tags;
         console.log('📝 Création de la session:', appState.sessionCode);
       } else {
@@ -407,9 +402,11 @@
         console.log('🔗 Connexion à la session:', appState.sessionCode);
       }
 
-      $('#loginSection').classList.add('hidden');
-      $('#mainApp').classList.remove('hidden');
-      $('#sessionCode').textContent = appState.sessionCode;
+      const loginSection=document.getElementById('loginSection');
+      const mainApp=document.getElementById('mainApp');
+      if(loginSection) loginSection.classList.add('hidden');
+      if(mainApp) mainApp.classList.remove('hidden');
+      const scode=document.getElementById('sessionCode'); if(scode) scode.textContent=appState.sessionCode;
 
       populateCategories();
       updateStats();
@@ -420,33 +417,40 @@
     }
     window.handleLogin = handleLogin;
 
-    function addCategory(){ const input=$('#newCategory'); const c=input.value.trim(); if(c && !appState.categories.includes(c)){ const tag=document.createElement('span'); tag.className='category-tag'; tag.innerHTML=`${c} <button onclick="removeCategory(this)">×</button>`; $('#categoryList').appendChild(tag); input.value=''; } }
+    // Categories
+    function addCategory(){ const input=document.getElementById('newCategory'); const c=(input?.value||'').trim(); if(!input) return; if(c && !appState.categories.includes(c)){ const tag=document.createElement('span'); tag.className='category-tag'; tag.innerHTML=`${c} <button onclick="removeCategory(this)">×</button>`; const list=document.getElementById('categoryList'); if(list) list.appendChild(tag); input.value=''; } }
     window.addCategory = addCategory;
-    window.removeCategory = (btn)=> btn.parentElement.remove();
+    window.removeCategory = (btn)=> btn?.parentElement?.remove();
 
-    function populateCategories(){ $('#category').innerHTML = appState.categories.map(cat=>`<option value="${cat}">${cat}</option>`).join(''); $('#filterCategory').innerHTML = '<option value="">Toutes catégories</option>'+ appState.categories.map(cat=>`<option value="${cat}">${cat}</option>`).join(''); }
+    function populateCategories(){ const catSel=document.getElementById('category'); const filSel=document.getElementById('filterCategory'); if(catSel) catSel.innerHTML = appState.categories.map(cat=>`<option value="${cat}">${cat}</option>`).join(''); if(filSel) filSel.innerHTML = '<option value="">Toutes catégories</option>'+ appState.categories.map(cat=>`<option value="${cat}">${cat}</option>`).join(''); }
 
+    // === Ideas ===
     async function handleAddIdea(event){
       event.preventDefault();
-      const category = $('#category').value;
-      const content  = $('#ideaContent').value.trim();
+      const categoryEl=document.getElementById('category');
+      const contentEl =document.getElementById('ideaContent');
+      if(!categoryEl||!contentEl) return;
+      const category = categoryEl.value;
+      const content  = contentEl.value.trim();
       if(!content) return;
       const { database, ref, push, set, update } = window.firebaseDB;
       const iRef = push(ref(database, `sessions/${appState.sessionCode}/ideas`));
       const idea = { id: iRef.key, author: appState.currentUser.fullName, category, content, timestamp: Date.now(), groupId: null };
       await set(iRef, idea);
-      $('#ideaContent').value='';
+      contentEl.value='';
       await update(ref(database, `sessions/${appState.sessionCode}`), { lastActivity: Date.now() });
       showToast('Idée ajoutée !', 'success');
     }
     window.handleAddIdea = handleAddIdea;
 
     function renderIdeas(){
-      const container = $('#ideasContainer');
-      const search = ($('#searchInput')?.value||'').toLowerCase();
-      const cat    = $('#filterCategory')?.value||'';
+      const container = document.getElementById('ideasContainer'); if(!container) return;
+      const searchEl=document.getElementById('searchInput');
+      const filtEl  =document.getElementById('filterCategory');
+      const search = (searchEl?.value||'').toLowerCase();
+      const cat    = (filtEl?.value||'');
       const list = appState.ideas.slice().sort((a,b)=>b.timestamp-a.timestamp).filter(i=>
-        (!search || i.content.toLowerCase().includes(search) || i.author.toLowerCase().includes(search)) && (!cat || i.category===cat)
+        (!search || (i.content||'').toLowerCase().includes(search) || (i.author||'').toLowerCase().includes(search)) && (!cat || i.category===cat)
       );
       if(!list.length){ container.innerHTML='<p style="text-align:center;color:var(--text-light);">Aucune idée trouvée...</p>'; return; }
       container.innerHTML = list.map(idea=>`
@@ -465,7 +469,7 @@
 
     function toggleIdeaForGrouping(id){
       if(selectedIdeasForGroup.has(id)) selectedIdeasForGroup.delete(id); else selectedIdeasForGroup.add(id);
-      const card = document.querySelector(`[data-id="${CSS.escape(id)}"]`); if(card) card.classList.toggle('grouped');
+      const sel = document.querySelector(`[data-id="${CSS.escape(id)}"]`); if(sel) sel.classList.toggle('grouped');
       if(selectedIdeasForGroup.size>=2) createGroup();
     }
     window.toggleIdeaForGrouping = toggleIdeaForGrouping;
@@ -483,26 +487,26 @@
     window.createGroup = createGroup;
 
     function renderGroups(){
-      const container = $('#groupsContainer');
+      const container = document.getElementById('groupsContainer'); if(!container) return;
       if(!appState.groups.length){ container.innerHTML='<p style="text-align:center;color:var(--text-light);">Aucun groupe créé pour le moment...</p>'; return; }
       container.innerHTML = appState.groups.map(g=>{
         const gi = appState.ideas.filter(i=> (g.ideaIds||[]).includes(i.id));
         return `<div class="group-section">
           <div class="group-header">
-            <div class="group-title"><span>🎯</span><span>${escapeHtml(g.name)}</span><small style="color:var(--text-light);">(${gi.length} idées)</small></div>
-            <small style="color:var(--text-light);">Par ${escapeHtml(g.createdBy||'')}</small>
+            <div class="group-title"><span>🎯</span><span>${escapeHtml(g.name)}</span><small style=\"color:var(--text-light);\">(${gi.length} idées)</small></div>
+            <small style=\"color:var(--text-light);\">Par ${escapeHtml(g.createdBy||'')}</small>
           </div>
           <div class="ideas-container" style="max-height:200px;">
-            ${gi.map(i=>`<div class="idea-card" style="margin-bottom:10px;"><div class="idea-author">${escapeHtml(i.author)}</div><div class="idea-content" style="font-size:13px;">${escapeHtml(i.content)}</div></div>`).join('')}
+            ${gi.map(i=>`<div class=\"idea-card\" style=\"margin-bottom:10px;\"><div class=\"idea-author\">${escapeHtml(i.author)}</div><div class=\"idea-content\" style=\"font-size:13px;\">${escapeHtml(i.content)}</div></div>`).join('')}
           </div>
         </div>`;
       }).join('');
       updateStats();
     }
 
-    function updateStats(){ $('#totalIdeas').textContent=appState.ideas.length; $('#totalGroups').textContent=appState.groups.length; $('#totalParticipants').textContent=appState.participants.size||0; $('#participantCount').textContent=appState.participants.size||0; }
+    function updateStats(){ const tI=document.getElementById('totalIdeas'); const tG=document.getElementById('totalGroups'); const tP=document.getElementById('totalParticipants'); const pC=document.getElementById('participantCount'); if(tI) tI.textContent=appState.ideas.length; if(tG) tG.textContent=appState.groups.length; const size=appState.participants.size||0; if(tP) tP.textContent=size; if(pC) pC.textContent=size; }
 
-    function updateParticipantsList(){ const c=$('#participantsList'); c.innerHTML = Array.from(appState.participants.values()).map(p=>`<span class="participant-tag">${escapeHtml(p.name)}${p.online?' •':''}${p.role==='creator'?' — créateur':''}</span>`).join(''); }
+    function updateParticipantsList(){ const c=document.getElementById('participantsList'); if(!c) return; c.innerHTML = Array.from(appState.participants.values()).map(p=>`<span class="participant-tag">${escapeHtml(p.name)}${p.online?' •':''}${p.role==='creator'?' — créateur':''}</span>`).join(''); }
 
     // Export & sauvegarde locale
     function getCategorySummary(){ const s={}; appState.ideas.forEach(i=>{ s[i.category]=(s[i.category]||0)+1; }); return s; }
@@ -541,24 +545,26 @@ ${'-'.repeat(30)}
 `; const gi=appState.ideas.filter(i=> (g.ideaIds||[]).includes(i.id)); gi.forEach(i=>{ text+=`• ${i.content} (${i.author})
 `; }); }); } downloadFile(text, `pole-mission-${appState.sessionCode}.txt`, 'text/plain;charset=utf-8'); }
 
+    window.exportJSON=exportJSON; window.exportCSV=exportCSV; window.exportText=exportText; window.saveToLocalStorage=saveToLocalStorage;
+
     function saveToLocalStorage(){
       const dataToSave={ sessionCode:appState.sessionCode, ideas:appState.ideas, participants:Array.from(appState.participants.values()).map(p=>p.name), groups:appState.groups, categories:appState.categories, lastUpdated:new Date().toISOString() };
       try{ localStorage.setItem(`brainstorming_${appState.sessionCode}`, JSON.stringify(dataToSave)); showToast('💾 Sauvegardé localement','success'); }catch(e){ console.warn('LocalStorage error', e); }
     }
 
-    window.exportJSON=exportJSON; window.exportCSV=exportCSV; window.exportText=exportText; window.saveToLocalStorage=saveToLocalStorage; // non critique ici
-
     // Modes
-    function switchMode(mode){ appState.mode=mode; $$('.mode-btn').forEach(b=>b.classList.remove('active')); const map={ideas:'Idées',groups:'Groupes',participants:'Participants',admin:'Admin'}; const btn=[...$$('.mode-btn')].find(b=>b.textContent.includes(map[mode])); if(btn) btn.classList.add('active'); $('#ideasMode').classList.toggle('hidden', mode!=='ideas'); $('#groupsMode').classList.toggle('hidden', mode!=='groups'); $('#participantsMode').classList.toggle('hidden', mode!=='participants'); $('#adminMode').classList.toggle('hidden', mode!=='admin'); if(mode==='groups') renderGroups(); }
+    function switchMode(mode){ appState.mode=mode; Array.from(document.querySelectorAll('.mode-btn')).forEach(b=>b.classList.remove('active')); const map={ideas:'Idées',groups:'Groupes',participants:'Participants',admin:'Admin'}; const btn=Array.from(document.querySelectorAll('.mode-btn')).find(b=>b.textContent.includes(map[mode])); if(btn) btn.classList.add('active'); const im=document.getElementById('ideasMode'); const gm=document.getElementById('groupsMode'); const pm=document.getElementById('participantsMode'); const am=document.getElementById('adminMode'); if(im) im.classList.toggle('hidden', mode!=='ideas'); if(gm) gm.classList.toggle('hidden', mode!=='groups'); if(pm) pm.classList.toggle('hidden', mode!=='participants'); if(am) am.classList.toggle('hidden', mode!=='admin'); if(mode==='groups') renderGroups(); }
     window.switchMode = switchMode;
 
     // Admin actions
-    $('#archiveBtn').addEventListener('click', async()=>{ if(!appState.isCreator) return; const { database, ref, update } = window.firebaseDB; await update(ref(database, `sessions/${appState.sessionCode}`), { status:'archived', archivedAt: Date.now() }); showToast('Session archivée','success'); });
-    $('#unarchiveBtn').addEventListener('click', async()=>{ if(!appState.isCreator) return; const { database, ref, update } = window.firebaseDB; await update(ref(database, `sessions/${appState.sessionCode}`), { status:'active' }); showToast('Session réactivée','success'); });
-    $('#purgeBtn').addEventListener('click', async()=>{ if(!appState.isCreator) return; if(!confirm('Supprimer définitivement cette session ?')) return; const { database, ref, remove } = window.firebaseDB; await remove(ref(database, `sessions/${appState.sessionCode}`)); showToast('Session supprimée','success'); location.reload(); });
-
-    // Logout
-    $('#logoutBtn').addEventListener('click', async()=>{ const { database, ref, update } = window.firebaseDB; const cid=clientIdFor(appState.sessionCode); await update(ref(database, `sessions/${appState.sessionCode}/participants/${cid}`), { online:false, lastSeen: Date.now() }); location.reload(); });
+    const archiveBtn=document.getElementById('archiveBtn');
+    const unarchiveBtn=document.getElementById('unarchiveBtn');
+    const purgeBtn=document.getElementById('purgeBtn');
+    const logoutBtn=document.getElementById('logoutBtn');
+    if(archiveBtn) archiveBtn.addEventListener('click', async()=>{ if(!appState.isCreator) return; const { database, ref, update } = window.firebaseDB; await update(ref(database, `sessions/${appState.sessionCode}`), { status:'archived', archivedAt: Date.now() }); showToast('Session archivée','success'); });
+    if(unarchiveBtn) unarchiveBtn.addEventListener('click', async()=>{ if(!appState.isCreator) return; const { database, ref, update } = window.firebaseDB; await update(ref(database, `sessions/${appState.sessionCode}`), { status:'active' }); showToast('Session réactivée','success'); });
+    if(purgeBtn) purgeBtn.addEventListener('click', async()=>{ if(!appState.isCreator) return; if(!confirm('Supprimer définitivement cette session ?')) return; const { database, ref, remove } = window.firebaseDB; await remove(ref(database, `sessions/${appState.sessionCode}`)); showToast('Session supprimée','success'); location.reload(); });
+    if(logoutBtn) logoutBtn.addEventListener('click', async()=>{ const { database, ref, update } = window.firebaseDB; const cid=clientIdFor(appState.sessionCode); await update(ref(database, `sessions/${appState.sessionCode}/participants/${cid}`), { online:false, lastSeen: Date.now() }); location.reload(); });
 
     // Firebase realtime
     async function initializeRealtimeConnection(){
@@ -575,8 +581,8 @@ ${'-'.repeat(30)}
         populateCategories(); renderIdeas(); renderGroups(); updateParticipantsList(); updateStats();
         if((data.createdBy||'')===appState.currentUser.fullName) appState.isCreator=true;
       }
-      if(appState.isCreator) $('#adminTab').classList.remove('hidden');
-      $('#sessionStatus').textContent = appState.status;
+      if(appState.isCreator){ const tab=document.getElementById('adminTab'); if(tab) tab.classList.remove('hidden'); }
+      const st=document.getElementById('sessionStatus'); if(st) st.textContent = appState.status;
 
       // Participant presence
       const cid = clientIdFor(appState.sessionCode);
@@ -600,7 +606,7 @@ ${'-'.repeat(30)}
         const obj=s.val()||{}; appState.participants=new Map(Object.entries(obj).map(([id,p])=>[id, typeof p==='string'?{name:p, online:true}:p]));
         updateParticipantsList(); updateStats();
         // Admin moderation list
-        if(appState.isCreator){ $('#moderateList').innerHTML = Object.entries(obj).map(([id,p])=>`<div class="idea-card" style="background:#fff; border-left-color:var(--primary); display:flex;justify-content:space-between;align-items:center;">
+        if(appState.isCreator){ const list=document.getElementById('moderateList'); if(list) list.innerHTML = Object.entries(obj).map(([id,p])=>`<div class="idea-card" style="background:#fff; border-left-color:var(--primary); display:flex;justify-content:space-between;align-items:center;">
           <div><strong>${escapeHtml(p.name||p)}</strong> ${p.online?'•':''} <small style="color:var(--text-light)">${id}</small></div>
           ${id!==clientIdFor(appState.sessionCode)? `<button class="group-btn" onclick="kickParticipant('${id}')">Retirer</button>`:''}
         </div>`).join(''); }
@@ -612,8 +618,16 @@ ${'-'.repeat(30)}
     async function kickParticipant(id){ if(!appState.isCreator) return; const { database, ref, remove } = window.firebaseDB; await remove(ref(database, `sessions/${appState.sessionCode}/participants/${id}`)); showToast('Participant retiré','success'); }
     window.kickParticipant = kickParticipant;
 
-    function showFirebaseInfo(){ const info = `\nFirebase Status:\n- SDK chargé: ${!!window.firebaseDB ? '✅' : '❌'}\n- Connecté: ${appState.connected ? '✅' : '❌'}\n- Session: ${appState.sessionCode || 'N/A'}\n- Mode: ${appState.isCreator ? 'Créateur' : 'Participant'}\n`; alert(info); }
+    function showFirebaseInfo(){ const info = `
+Firebase Status:
+- SDK chargé: ${!!window.firebaseDB ? '✅' : '❌'}
+- Connecté: ${appState.connected ? '✅' : '❌'}
+- Session: ${appState.sessionCode || 'N/A'}
+- Mode: ${appState.isCreator ? 'Créateur' : 'Participant'}
+`; alert(info); }
     window.showFirebaseInfo = showFirebaseInfo;
+
+  })();
   </script>
 </body>
 </html>
