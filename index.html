@@ -573,9 +573,9 @@
     </style>
 </head>
 <body>
-    <div class="connection-status">
+    <div class="connection-status" onclick="showFirebaseInfo()">
         <span class="status-dot" id="statusDot"></span>
-        <span id="statusText">Hors ligne</span>
+        <span id="statusText">Vérification...</span>
     </div>
 
     <div class="container">
@@ -798,6 +798,26 @@
 
         let groupingMode = false;
         let selectedIdeasForGroup = new Set();
+        let firebaseReady = false;
+        
+        // Wait for Firebase to be ready
+        let checkFirebase = setInterval(() => {
+            if (window.firebaseDB) {
+                firebaseReady = true;
+                clearInterval(checkFirebase);
+                console.log('✅ Firebase SDK chargé');
+                updateConnectionStatus(true);
+            }
+        }, 100);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+            if (!firebaseReady) {
+                clearInterval(checkFirebase);
+                console.warn('⚠️ Firebase non disponible, mode local activé');
+                updateConnectionStatus(false);
+            }
+        }, 5000);
 
         // Initialize
         document.getElementById('sessionInput').addEventListener('input', function(e) {
@@ -823,7 +843,7 @@
             
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
-            const sessionInput = document.getElementById('sessionInput').value.trim();
+            const sessionInput = document.getElementById('sessionInput').value.trim().toUpperCase();
             
             appState.currentUser = {
                 firstName,
@@ -833,25 +853,28 @@
             };
             
             if (!sessionInput) {
+                // Creating a new session
                 appState.isCreator = true;
                 appState.sessionCode = generateSessionCode();
+                
                 // Get custom categories if creator
                 const categoryTags = document.querySelectorAll('#categoryList .category-tag');
                 appState.categories = Array.from(categoryTags).map(tag => 
                     tag.textContent.replace('×', '').trim()
                 );
+                
+                console.log('📝 Création de la session:', appState.sessionCode);
             } else {
-                appState.sessionCode = sessionInput.toUpperCase();
-                // Load existing session from localStorage or Firebase
-                loadSession(appState.sessionCode);
+                // Joining existing session
+                appState.isCreator = false;
+                appState.sessionCode = sessionInput;
+                console.log('🔗 Connexion à la session:', appState.sessionCode);
             }
             
+            // Add participant locally first
             appState.participants.add(appState.currentUser.fullName);
             
-            // Initialize Firebase connection if available
-            initializeRealtimeConnection();
-            
-            // Update UI
+            // Update UI immediately
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('sessionCode').textContent = appState.sessionCode;
@@ -859,10 +882,13 @@
             populateCategories();
             updateStats();
             updateParticipantsList();
-            showToast(`Bienvenue ${firstName} !`, 'success');
             
-            // Save to localStorage
-            saveToLocalStorage();
+            // Initialize Firebase connection
+            setTimeout(() => {
+                initializeRealtimeConnection();
+            }, 500);
+            
+            showToast(`Bienvenue ${firstName} !`, 'success');
         }
 
         // Category Management
@@ -1110,7 +1136,7 @@
                 .join('');
         }
 
-        // Local Storage
+        // Local Storage (backup only)
         function saveToLocalStorage() {
             const dataToSave = {
                 sessionCode: appState.sessionCode,
@@ -1122,7 +1148,10 @@
             };
             
             localStorage.setItem(`brainstorming_${appState.sessionCode}`, JSON.stringify(dataToSave));
-            showToast('Sauvegardé localement', 'success');
+            
+            if (!appState.connected) {
+                showToast('💾 Sauvegardé localement', 'info');
+            }
         }
 
         function loadFromLocalStorage() {
@@ -1156,55 +1185,172 @@
             }
         }
 
-        // Firebase Real-time sync (stub)
+        // Firebase Real-time sync
         function initializeRealtimeConnection() {
-            // This would connect to Firebase if configured
-            if (window.firebaseDB) {
+            if (!firebaseReady || !window.firebaseDB) {
+                console.log('⚠️ Firebase non disponible, utilisation du mode local');
+                updateConnectionStatus(false);
+                // Fallback to localStorage only
+                saveToLocalStorage();
+                return;
+            }
+            
+            const { database, ref, set, get, child, update } = window.firebaseDB;
+            const sessionRef = ref(database, `sessions/${appState.sessionCode}`);
+            
+            console.log('🔄 Tentative de connexion Firebase pour session:', appState.sessionCode);
+            
+            // First, check if session exists
+            get(sessionRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    // Session exists
+                    const data = snapshot.val();
+                    console.log('✅ Session trouvée:', data);
+                    
+                    if (!appState.isCreator) {
+                        // Load existing session data for joiners
+                        if (data.categories) {
+                            appState.categories = data.categories;
+                            populateCategories();
+                        }
+                        
+                        if (data.ideas) {
+                            appState.ideas = Object.values(data.ideas).map(idea => ({
+                                ...idea,
+                                id: idea.id || Date.now() + Math.random()
+                            }));
+                            renderIdeas();
+                        }
+                        
+                        if (data.participants) {
+                            Object.values(data.participants).forEach(p => {
+                                if (typeof p === 'string') {
+                                    appState.participants.add(p);
+                                }
+                            });
+                            updateParticipantsList();
+                        }
+                        
+                        if (data.groups) {
+                            appState.groups = Object.values(data.groups);
+                            renderGroups();
+                        }
+                        
+                        updateStats();
+                        showToast('✅ Connecté à la session Firebase', 'success');
+                    }
+                } else if (appState.isCreator) {
+                    // Create new session
+                    console.log('📝 Création nouvelle session Firebase');
+                    const sessionData = {
+                        createdAt: new Date().toISOString(),
+                        createdBy: appState.currentUser.fullName,
+                        categories: appState.categories,
+                        sessionCode: appState.sessionCode
+                    };
+                    
+                    set(sessionRef, sessionData).then(() => {
+                        console.log('✅ Session créée dans Firebase');
+                        showToast('✅ Session créée dans Firebase', 'success');
+                    }).catch((error) => {
+                        console.error('❌ Erreur création session:', error);
+                        showToast('Erreur: ' + error.message, 'warning');
+                    });
+                } else {
+                    // Session doesn't exist but user is trying to join
+                    console.warn('❌ Session introuvable:', appState.sessionCode);
+                    showToast('⚠️ Session introuvable, création locale', 'warning');
+                }
+                
+                // Add participant
+                const participantId = Date.now() + '_' + Math.random().toString(36).substring(2);
+                const participantRef = ref(database, `sessions/${appState.sessionCode}/participants/${participantId}`);
+                set(participantRef, appState.currentUser.fullName).then(() => {
+                    console.log('✅ Participant ajouté');
+                }).catch((error) => {
+                    console.error('❌ Erreur ajout participant:', error);
+                });
+                
+                // Set up real-time listeners
+                listenForUpdates();
                 appState.connected = true;
                 updateConnectionStatus(true);
-                // Set up listeners for real-time updates
-                listenForUpdates();
-            } else {
-                // Fallback to localStorage polling for demo
-                setInterval(() => {
-                    loadSession(appState.sessionCode);
-                }, 5000);
+                
+            }).catch((error) => {
+                console.error('❌ Erreur Firebase:', error);
+                showToast('Mode local activé (Firebase indisponible)', 'warning');
                 updateConnectionStatus(false);
-            }
+            });
         }
 
         function syncToFirebase(type, data) {
-            if (window.firebaseDB) {
-                const { database, ref, push, set } = window.firebaseDB;
-                const updates = {};
-                updates[`/sessions/${appState.sessionCode}/${type}/${data.id}`] = data;
-                set(ref(database), updates);
+            if (!firebaseReady || !window.firebaseDB) {
+                console.log('Firebase non disponible pour sync');
+                return;
             }
+            
+            const { database, ref, set } = window.firebaseDB;
+            const itemRef = ref(database, `sessions/${appState.sessionCode}/${type}/${data.id}`);
+            
+            console.log(`🔄 Sync ${type}:`, data);
+            
+            set(itemRef, data).then(() => {
+                console.log(`✅ ${type} synchronisé`);
+            }).catch((error) => {
+                console.error(`❌ Erreur sync ${type}:`, error);
+                if (error.code === 'PERMISSION_DENIED') {
+                    showToast('⚠️ Vérifiez les règles Firebase', 'warning');
+                }
+            });
         }
 
         function listenForUpdates() {
             if (window.firebaseDB) {
                 const { database, ref, onValue } = window.firebaseDB;
-                const sessionRef = ref(database, `/sessions/${appState.sessionCode}`);
+                const sessionRef = ref(database, `sessions/${appState.sessionCode}`);
                 
                 onValue(sessionRef, (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
-                        // Update local state with remote data
+                        let hasUpdates = false;
+                        
+                        // Update ideas
                         if (data.ideas) {
-                            appState.ideas = Object.values(data.ideas);
-                            renderIdeas();
+                            const newIdeas = Object.values(data.ideas);
+                            if (newIdeas.length !== appState.ideas.length) {
+                                appState.ideas = newIdeas;
+                                renderIdeas();
+                                hasUpdates = true;
+                            }
                         }
+                        
+                        // Update participants
                         if (data.participants) {
-                            appState.participants = new Set(Object.values(data.participants));
-                            updateParticipantsList();
+                            const newParticipants = new Set(Object.values(data.participants));
+                            if (newParticipants.size !== appState.participants.size) {
+                                appState.participants = newParticipants;
+                                updateParticipantsList();
+                                hasUpdates = true;
+                            }
                         }
+                        
+                        // Update groups
                         if (data.groups) {
-                            appState.groups = Object.values(data.groups);
-                            renderGroups();
+                            const newGroups = Object.values(data.groups);
+                            if (newGroups.length !== appState.groups.length) {
+                                appState.groups = newGroups;
+                                renderGroups();
+                                hasUpdates = true;
+                            }
                         }
-                        updateStats();
+                        
+                        if (hasUpdates) {
+                            updateStats();
+                        }
                     }
+                }, (error) => {
+                    console.error('Listen error:', error);
+                    updateConnectionStatus(false);
                 });
             }
         }
@@ -1356,14 +1502,31 @@
             showToast(`Export réussi : ${filename}`, 'success');
         }
 
+        function showFirebaseInfo() {
+            const info = `
+Firebase Status:
+- SDK chargé: ${firebaseReady ? '✅' : '❌'}
+- Connecté: ${appState.connected ? '✅' : '❌'}
+- Session: ${appState.sessionCode || 'N/A'}
+- Mode: ${appState.isCreator ? 'Créateur' : 'Participant'}
+
+Si Firebase ne fonctionne pas:
+1. Vérifiez les règles dans Firebase Console
+2. Activez "Realtime Database" dans Firebase
+3. Vérifiez la console du navigateur (F12)
+            `;
+            alert(info);
+        }
+        
         function showToast(message, type = 'info') {
+            console.log(`[TOAST ${type}]`, message);
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.textContent = message;
             document.body.appendChild(toast);
             setTimeout(() => {
                 toast.remove();
-            }, 3000);
+            }, 4000);
         }
     </script>
 </body>
