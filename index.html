@@ -1,1533 +1,353 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pôle Mission - Brainstorming Collaboratif</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #2C3E50;
-            --secondary: #3498DB;
-            --accent: #E74C3C;
-            --success: #27AE60;
-            --warning: #F39C12;
-            --bg-light: #ECF0F1;
-            --bg-dark: #34495E;
-            --text-dark: #2C3E50;
-            --text-light: #7F8C8D;
-            --border: #BDC3C7;
-            --shadow: rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 10px;
-            color: var(--text-dark);
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .app-header {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px var(--shadow);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .app-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
-            animation: gradientShift 3s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(10px); }
-        }
-
-        .app-header h1 {
-            font-size: 24px;
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        .app-header p {
-            color: var(--text-light);
-            font-size: 14px;
-        }
-
-        .session-badge {
-            background: var(--primary);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 5px 15px rgba(44, 62, 80, 0.2);
-        }
-
-        .session-code {
-            font-size: 18px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-
-        .live-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #27AE60;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px var(--shadow);
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--text-dark);
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s;
-            background: white;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px 25px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            background: var(--bg-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--secondary);
-        }
-
-        .btn-secondary:hover {
-            background: #2980B9;
-        }
-
-        .btn-success {
-            background: var(--success);
-        }
-
-        .btn-success:hover {
-            background: #229954;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 13px;
-            width: auto;
-        }
-
-        .category-manager {
-            background: var(--bg-light);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .category-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .category-tag {
-            background: var(--primary);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .category-tag button {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0;
-            margin: 0;
-            line-height: 1;
-        }
-
-        .add-category-form {
-            display: flex;
-            gap: 8px;
-        }
-
-        .add-category-form input {
-            flex: 1;
-            padding: 8px 12px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            border-left: 4px solid var(--secondary);
-            box-shadow: 0 3px 10px var(--shadow);
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: var(--primary);
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-light);
-            margin-top: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .ideas-container {
-            max-height: 500px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-
-        .ideas-container::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .ideas-container::-webkit-scrollbar-track {
-            background: var(--bg-light);
-            border-radius: 10px;
-        }
-
-        .ideas-container::-webkit-scrollbar-thumb {
-            background: var(--secondary);
-            border-radius: 10px;
-        }
-
-        .idea-card {
-            background: var(--bg-light);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--secondary);
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .idea-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px var(--shadow);
-        }
-
-        .idea-card.grouped {
-            border-left-color: var(--accent);
-            background: #FEF5E7;
-        }
-
-        .idea-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .idea-author {
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 14px;
-        }
-
-        .idea-category {
-            background: var(--secondary);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            text-transform: uppercase;
-        }
-
-        .idea-content {
-            color: var(--text-dark);
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        .idea-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .idea-time {
-            font-size: 11px;
-            color: var(--text-light);
-        }
-
-        .idea-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .group-btn {
-            background: var(--warning);
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .group-btn:hover {
-            background: #E67E22;
-        }
-
-        .group-section {
-            background: #FEF5E7;
-            border: 2px dashed var(--warning);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .group-title {
-            font-weight: 600;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .participants-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .participant-tag {
-            background: white;
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            border: 2px solid var(--primary);
-        }
-
-        .filter-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filter-section input,
-        .filter-section select {
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .export-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .mode-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: var(--bg-light);
-            padding: 5px;
-            border-radius: 10px;
-        }
-
-        .mode-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: transparent;
-            color: var(--text-dark);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .mode-btn.active {
-            background: white;
-            box-shadow: 0 2px 8px var(--shadow);
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            animation: slideUpToast 0.5s ease;
-            z-index: 1000;
-        }
-
-        .toast.success {
-            background: var(--success);
-        }
-
-        .toast.warning {
-            background: var(--warning);
-        }
-
-        @keyframes slideUpToast {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-
-        .connection-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            box-shadow: 0 2px 10px var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            z-index: 100;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-        }
-
-        .status-dot.offline {
-            background: var(--accent);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        @media (max-width: 480px) {
-            .app-header h1 {
-                font-size: 20px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-section {
-                flex-direction: column;
-            }
-
-            .export-section {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Pôle Mission — Brainstorming collaboratif</title>
+  <style>
+    *{box-sizing:border-box} :root{--primary:#2C3E50;--secondary:#3498DB;--accent:#E74C3C;--success:#27AE60;--warning:#F39C12;--bg-light:#ECF0F1;--text-dark:#2C3E50;--text-light:#7F8C8D;--border:#BDC3C7;--shadow:rgba(0,0,0,.1)}
+    body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#f5f7fa,#c3cfe2);min-height:100vh;margin:0;padding:12px;color:var(--text-dark)}
+    .container{max-width:780px;margin:0 auto}
+    .card{background:#fff;border-radius:14px;padding:18px;margin:12px 0;box-shadow:0 8px 24px var(--shadow)}
+    .app-header{padding:24px 18px;border-radius:18px;position:relative;overflow:hidden}
+    .app-header::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--secondary),var(--accent))}
+    .h1{font-weight:800;font-size:24px;color:var(--primary);margin:0 0 6px}
+    .muted{color:var(--text-light);font-size:13px}
+    .row{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center}
+    label{font-size:13px;color:var(--text-dark)} input,select,textarea{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;background:#fff;font-size:14px}
+    textarea{min-height:90px;resize:vertical}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--primary);color:#fff;border-radius:10px;padding:12px 16px;font-weight:600;cursor:pointer}
+    .btn:hover{filter:brightness(.95)} .btn.secondary{background:var(--secondary)} .btn.success{background:var(--success)}
+    .grid{display:grid;gap:12px} .grid.stats{grid-template-columns:repeat(3,1fr)} .stat{border-left:4px solid var(--secondary);text-align:center;padding:16px;border-radius:12px;background:#fff;box-shadow:0 4px 14px var(--shadow)}
+    .stat .v{font-weight:800;font-size:26px;color:var(--primary)} .stat .l{font-size:12px;color:var(--text-light)}
+    .session-badge{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 6px 18px var(--shadow)}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:20px;background:var(--bg-light);font-size:12px}
+    .ideas{max-height:460px;overflow:auto}
+    .idea{background:var(--bg-light);border-left:4px solid var(--secondary);border-radius:12px;padding:12px;margin:10px 0}
+    .idea .meta{display:flex;justify-content:space-between;align-items:flex-start;font-size:12px;color:var(--text-light)}
+    .idea .content{margin:8px 0;white-space:pre-wrap}
+    .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:10px 18px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:999}
+    .toast.success{background:var(--success)} .toast.warn{background:var(--warning)}
+    .status{position:fixed;top:10px;right:10px;background:#fff;border-radius:999px;box-shadow:0 6px 16px var(--shadow);padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:12px}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--success)} .dot.off{background:var(--accent)}
+  </style>
 </head>
 <body>
-    <div class="connection-status" onclick="showFirebaseInfo()">
-        <span class="status-dot" id="statusDot"></span>
-        <span id="statusText">Vérification...</span>
+  <div class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">Vérification…</span></div>
+  <div class="container">
+    <div class="card app-header">
+      <div class="h1">🎯 Pôle Mission</div>
+      <div class="muted">Brainstorming collaboratif en temps réel (Firebase Realtime Database)</div>
     </div>
 
-    <div class="container">
-        <div class="app-header">
-            <h1>🎯 Pôle Mission</h1>
-            <p>Brainstorming Collaboratif</p>
+    <!-- Connexion / Création de session -->
+    <div class="card" id="loginCard">
+      <h3 style="margin:0 0 12px">Rejoindre une session</h3>
+      <form id="loginForm">
+        <div class="grid">
+          <div class="row"><label>Prénom</label><input id="firstName" required /></div>
+          <div class="row"><label>Nom</label><input id="lastName" required /></div>
+          <div class="row"><label>Code session (vide = créer)</label><input id="sessionInput" maxlength="6" style="text-transform:uppercase" /></div>
         </div>
-
-        <!-- Login Section -->
-        <div id="loginSection" class="card">
-            <h2 style="margin-bottom: 20px; color: var(--primary);">Rejoindre une session</h2>
-            <form onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label>Prénom</label>
-                    <input type="text" id="firstName" required>
-                </div>
-                <div class="form-group">
-                    <label>Nom</label>
-                    <input type="text" id="lastName" required>
-                </div>
-                <div class="form-group">
-                    <label>Code session (laisser vide pour créer)</label>
-                    <input type="text" id="sessionInput" maxlength="6" style="text-transform: uppercase;">
-                </div>
-                
-                <div id="sessionCreatorOptions" class="hidden">
-                    <div class="form-group">
-                        <label>⚙️ Personnaliser les catégories</label>
-                        <div class="category-manager">
-                            <div class="category-list" id="categoryList">
-                                <span class="category-tag">Général <button onclick="removeCategory(this)">×</button></span>
-                                <span class="category-tag">Innovation <button onclick="removeCategory(this)">×</button></span>
-                                <span class="category-tag">Amélioration <button onclick="removeCategory(this)">×</button></span>
-                                <span class="category-tag">Problème <button onclick="removeCategory(this)">×</button></span>
-                                <span class="category-tag">Solution <button onclick="removeCategory(this)">×</button></span>
-                            </div>
-                            <div class="add-category-form">
-                                <input type="text" id="newCategory" placeholder="Nouvelle catégorie">
-                                <button type="button" class="btn btn-small btn-secondary" onclick="addCategory()">+</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn">
-                    <span>🚀</span>
-                    <span>Démarrer</span>
-                </button>
-            </form>
+        <div id="creatorOptions" class="card" style="margin-top:12px;display:none">
+          <div class="muted" style="margin-bottom:6px">Catégories (création de session)</div>
+          <div id="catTags" style="display:flex;flex-wrap:wrap;gap:8px">
+            <span class="chip">Général</span>
+            <span class="chip">Innovation</span>
+            <span class="chip">Amélioration</span>
+            <span class="chip">Problème</span>
+            <span class="chip">Solution</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input id="newCat" placeholder="Nouvelle catégorie" />
+            <button type="button" class="btn secondary" id="addCat">Ajouter</button>
+          </div>
         </div>
-
-        <!-- Main App -->
-        <div id="mainApp" class="hidden">
-            <div class="session-badge">
-                <div>
-                    <div class="session-code" id="sessionCode">XXXXX</div>
-                    <small style="opacity: 0.9;">Code de session</small>
-                </div>
-                <div class="live-indicator">
-                    <span class="live-dot"></span>
-                    <span id="participantCount">1</span> en ligne
-                </div>
-            </div>
-
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-value" id="totalIdeas">0</span>
-                    <span class="stat-label">Idées</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="totalParticipants">0</span>
-                    <span class="stat-label">Participants</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-value" id="totalGroups">0</span>
-                    <span class="stat-label">Groupes</span>
-                </div>
-            </div>
-
-            <!-- Mode Selector -->
-            <div class="mode-selector">
-                <button class="mode-btn active" onclick="switchMode('ideas')">💡 Idées</button>
-                <button class="mode-btn" onclick="switchMode('groups')">🎯 Groupes</button>
-                <button class="mode-btn" onclick="switchMode('participants')">👥 Participants</button>
-            </div>
-
-            <!-- Ideas Mode -->
-            <div id="ideasMode">
-                <!-- Add Idea Form -->
-                <div class="card">
-                    <h3 style="margin-bottom: 15px;">Ajouter une idée</h3>
-                    <form onsubmit="handleAddIdea(event)">
-                        <div class="form-group">
-                            <select id="category">
-                                <!-- Will be populated dynamically -->
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <textarea id="ideaContent" placeholder="Votre idée..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-success">
-                            <span>💡</span>
-                            <span>Partager l'idée</span>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Filter Section -->
-                <div class="filter-section">
-                    <input type="text" id="searchInput" placeholder="🔍 Rechercher..." oninput="filterIdeas()">
-                    <select id="filterCategory" onchange="filterIdeas()">
-                        <!-- Will be populated dynamically -->
-                    </select>
-                </div>
-
-                <!-- Ideas List -->
-                <div class="card">
-                    <h3 style="margin-bottom: 15px;">Flux d'idées</h3>
-                    <div id="ideasContainer" class="ideas-container">
-                        <p style="text-align: center; color: var(--text-light);">Aucune idée pour le moment...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Groups Mode -->
-            <div id="groupsMode" class="hidden">
-                <div class="card">
-                    <h3 style="margin-bottom: 15px;">Groupes d'idées similaires</h3>
-                    <div id="groupsContainer">
-                        <p style="text-align: center; color: var(--text-light);">Aucun groupe créé pour le moment...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Participants Mode -->
-            <div id="participantsMode" class="hidden">
-                <div class="card">
-                    <h3 style="margin-bottom: 15px;">Participants actifs</h3>
-                    <div id="participantsList" class="participants-list"></div>
-                </div>
-            </div>
-
-            <!-- Export Section -->
-            <div class="export-section">
-                <button onclick="exportJSON()" class="btn btn-secondary">
-                    <span>📥</span>
-                    <span>JSON</span>
-                </button>
-                <button onclick="exportCSV()" class="btn btn-secondary">
-                    <span>📊</span>
-                    <span>CSV</span>
-                </button>
-                <button onclick="exportText()" class="btn btn-secondary">
-                    <span>📝</span>
-                    <span>Texte</span>
-                </button>
-                <button onclick="saveToLocalStorage()" class="btn btn-success">
-                    <span>💾</span>
-                    <span>Sauvegarder</span>
-                </button>
-            </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button class="btn" type="submit">🚀 Démarrer</button>
         </div>
+      </form>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Configuration Firebase pour Pôle Mission
-        const firebaseConfig = {
-            apiKey: "AIzaSyDRJzayhxMtvijL_944zMPtMEMU8zUXRaE",
-            authDomain: "coworking-67676.firebaseapp.com",
-            databaseURL: "https://coworking-67676-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "coworking-67676",
-            storageBucket: "coworking-67676.firebasestorage.app",
-            messagingSenderId: "132701423535",
-            appId: "1:132701423535:web:d10b9bc0f68bf089d0515a",
-            measurementId: "G-79784W76EY"
-        };
+    <!-- App principale -->
+    <div id="app" style="display:none">
+      <div class="session-badge">
+        <div>
+          <div style="font-weight:800;font-size:18px" id="sessionCode">———</div>
+          <div class="muted">Code de session</div>
+        </div>
+        <div class="chip"><span class="dot" style="width:6px;height:6px"></span><span id="onlineCount">1</span> en ligne</div>
+      </div>
 
-        // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-        import { getDatabase, ref, push, set, get, onValue, off, child, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
-        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js';
-        
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const analytics = getAnalytics(app);
-        
-        // Make Firebase available globally
-        window.firebaseDB = { 
-            database, 
-            ref, 
-            push, 
-            set, 
-            get,
-            onValue, 
-            off,
-            child,
-            update,
-            remove
-        };
-        
-        console.log('✅ Firebase connecté avec succès!');
-    </script>
+      <div class="grid stats">
+        <div class="stat"><div class="v" id="statIdeas">0</div><div class="l">Idées</div></div>
+        <div class="stat"><div class="v" id="statParticipants">0</div><div class="l">Participants</div></div>
+        <div class="stat"><div class="v" id="statGroups">0</div><div class="l">Groupes</div></div>
+      </div>
 
-    <script>
-        // App State
-        let appState = {
-            currentUser: null,
-            sessionCode: null,
-            ideas: [],
-            participants: new Set(),
-            groups: [],
-            categories: ['Général', 'Innovation', 'Amélioration', 'Problème', 'Solution'],
-            isCreator: false,
-            mode: 'ideas',
-            connected: false
-        };
+      <!-- Ajout d'idée -->
+      <div class="card">
+        <h3 style="margin:0 0 10px">Ajouter une idée</h3>
+        <form id="ideaForm">
+          <div class="row"><label>Catégorie</label><select id="category"></select></div>
+          <div class="row"><label>Idée</label><textarea id="ideaText" placeholder="Votre idée…" required></textarea></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn success" type="submit">💡 Partager l'idée</button></div>
+        </form>
+      </div>
 
-        let groupingMode = false;
-        let selectedIdeasForGroup = new Set();
-        let firebaseReady = false;
-        
-        // Wait for Firebase to be ready
-        let checkFirebase = setInterval(() => {
-            if (window.firebaseDB) {
-                firebaseReady = true;
-                clearInterval(checkFirebase);
-                console.log('✅ Firebase SDK chargé');
-                updateConnectionStatus(true);
-            }
-        }, 100);
-        
-        // Timeout after 5 seconds
-        setTimeout(() => {
-            if (!firebaseReady) {
-                clearInterval(checkFirebase);
-                console.warn('⚠️ Firebase non disponible, mode local activé');
-                updateConnectionStatus(false);
-            }
-        }, 5000);
+      <!-- Filtres -->
+      <div class="card" style="display:flex;gap:8px;align-items:center">
+        <input id="search" placeholder="🔍 Rechercher…" />
+        <select id="filterCat"><option value="">Toutes catégories</option></select>
+      </div>
 
-        // Initialize
-        document.getElementById('sessionInput').addEventListener('input', function(e) {
-            const isEmpty = e.target.value.trim() === '';
-            document.getElementById('sessionCreatorOptions').classList.toggle('hidden', !isEmpty);
-            if (isEmpty) {
-                appState.isCreator = true;
-            }
+      <!-- Flux d'idées -->
+      <div class="card">
+        <h3 style="margin:0 0 12px">Flux d'idées</h3>
+        <div id="ideas" class="ideas"><p class="muted" style="text-align:center">Aucune idée pour le moment…</p></div>
+      </div>
+
+      <!-- Participants -->
+      <div class="card">
+        <h3 style="margin:0 0 10px">Participants</h3>
+        <div id="participants" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+
+      <!-- Exports -->
+      <div class="card" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">
+        <button class="btn secondary" id="expJSON">📥 JSON</button>
+        <button class="btn secondary" id="expCSV">📊 CSV</button>
+        <button class="btn secondary" id="expTXT">📝 Texte</button>
+        <button class="btn success" id="saveLocal">💾 Sauvegarder localement</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // === CONFIG FIREBASE (harmonisée) ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyDRJzayhxMtvijL_944zMPtMEMU8zUXRaE",
+      authDomain: "coworking-67676.firebaseapp.com",
+      databaseURL: "https://coworking-67676-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "coworking-67676",
+      storageBucket: "coworking-67676.appspot.com",
+      messagingSenderId: "132701423535",
+      appId: "1:132701423535:web:d10b9bc0f68bf089d0515a",
+      measurementId: "G-79784W76EY"
+    };
+
+    // === IMPORTS FIREBASE (SDK modulaire) ===
+    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
+    import {
+      getDatabase, ref, push, set, update, remove, get,
+      onValue, onChildAdded, onChildChanged, onChildRemoved
+    } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js';
+
+    // Initialisation (évite la double init)
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    // === ÉTAT APP ===
+    const state = {
+      me: null,
+      session: null,
+      isCreator: false,
+      categories: ['Général','Innovation','Amélioration','Problème','Solution'],
+      ideas: [], // {id, author, category, content, timestamp}
+      groups: [],
+      participants: new Map(), // key -> name
+      listeners: [],
+      connected: false
+    };
+
+    // === UTIL ===
+    const $ = s => document.querySelector(s);
+    const elIdeas = $('#ideas');
+    const elParticipants = $('#participants');
+    const elCategory = $('#category');
+    const elFilterCat = $('#filterCat');
+    const elSessionCode = $('#sessionCode');
+    const elStatIdeas = $('#statIdeas');
+    const elStatParticipants = $('#statParticipants');
+    const elStatGroups = $('#statGroups');
+    function toast(msg, kind='info'){ const t=document.createElement('div'); t.className=`toast ${kind==='success'?'success':kind==='warn'?'warn':''}`; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3200); }
+    const safe = s => s.replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
+
+    // === Indicateur connexion ===
+    onValue(ref(db,'.info/connected'), snap => {
+      const ok = !!snap.val(); state.connected = ok;
+      $('#dot').classList.toggle('off', !ok);
+      $('#statusText').textContent = ok ? 'En ligne' : 'Mode hors-ligne';
+    });
+
+    // === Login UI ===
+    $('#sessionInput').addEventListener('input', e => {
+      const empty = !e.target.value.trim();
+      state.isCreator = empty;
+      $('#creatorOptions').style.display = empty ? 'block' : 'none';
+    });
+
+    $('#addCat').addEventListener('click', () => {
+      const v = $('#newCat').value.trim(); if(!v) return; state.categories.push(v);
+      const tag = document.createElement('span'); tag.className='chip'; tag.textContent=v; $('#catTags').appendChild(tag); $('#newCat').value='';
+    });
+
+    $('#loginForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const first = $('#firstName').value.trim();
+      const last  = $('#lastName').value.trim();
+      let code    = $('#sessionInput').value.trim().toUpperCase();
+      if(!first||!last) return;
+      state.me = { fullName: `${first} ${last}` };
+      if(!code){ state.isCreator = true; code = Math.random().toString(36).slice(2,8).toUpperCase(); }
+      state.session = code;
+
+      if(state.isCreator){
+        const tags = Array.from(document.querySelectorAll('#catTags .chip')).map(x=>x.textContent.trim());
+        if(tags.length) state.categories = tags;
+      }
+
+      $('#loginCard').style.display = 'none'; $('#app').style.display = '';
+      elSessionCode.textContent = state.session;
+      populateCategories();
+
+      await ensureSession();
+      await addParticipant();
+      attachRealtimeListeners();
+      toast(`Bienvenue ${first} !`, 'success');
+    });
+
+    function populateCategories(){
+      elCategory.innerHTML = state.categories.map(c=>`<option value="${c}">${c}</option>`).join('');
+      elFilterCat.innerHTML = '<option value="">Toutes catégories</option>' + state.categories.map(c=>`<option value="${c}">${c}</option>`).join('');
+    }
+
+    // === Session ===
+    async function ensureSession(){
+      const sRef = ref(db, `sessions/${state.session}`);
+      const snap = await get(sRef);
+      if(!snap.exists() && state.isCreator){
+        await set(sRef, {
+          sessionCode: state.session,
+          createdAt: new Date().toISOString(),
+          createdBy: state.me.fullName,
+          categories: state.categories
         });
+        toast('✅ Session créée dans Firebase', 'success');
+      } else if(snap.exists()){
+        const data = snap.val();
+        if(data.categories) state.categories = data.categories;
+        populateCategories();
+        if(data.ideas){ state.ideas = Object.values(data.ideas); renderIdeas(); }
+        if(data.groups){ state.groups = Object.values(data.groups); renderGroups(); }
+        if(data.participants){ state.participants = new Map(Object.entries(data.participants)); renderParticipants(); }
+      }
+      updateStats();
+    }
 
-        // Load from localStorage on startup
-        window.addEventListener('load', () => {
-            loadFromLocalStorage();
-        });
+    // === Participants ===
+    async function addParticipant(){
+      const pRef = push(ref(db, `sessions/${state.session}/participants`));
+      await set(pRef, state.me.fullName);
+    }
+    function renderParticipants(){
+      const arr = Array.from(state.participants.values());
+      elParticipants.innerHTML = arr.map(n=>`<span class="chip">${safe(n)}</span>`).join('');
+      $('#onlineCount').textContent = arr.length;
+      elStatParticipants.textContent = arr.length;
+    }
 
-        // Session Management
-        function generateSessionCode() {
-            return Math.random().toString(36).substring(2, 8).toUpperCase();
-        }
+    // === Idées ===
+    $('#ideaForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const content = $('#ideaText').value.trim(); if(!content) return;
+      const category = $('#category').value;
+      const iRef = push(ref(db, `sessions/${state.session}/ideas`));
+      const idea = { id: iRef.key, author: state.me.fullName, category, content, timestamp: Date.now(), groupId: null };
+      await set(iRef, idea);
+      $('#ideaText').value = '';
+      toast('Idée ajoutée !','success');
+    });
 
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const sessionInput = document.getElementById('sessionInput').value.trim().toUpperCase();
-            
-            appState.currentUser = {
-                firstName,
-                lastName,
-                fullName: `${firstName} ${lastName}`,
-                joinedAt: new Date().toISOString()
-            };
-            
-            if (!sessionInput) {
-                // Creating a new session
-                appState.isCreator = true;
-                appState.sessionCode = generateSessionCode();
-                
-                // Get custom categories if creator
-                const categoryTags = document.querySelectorAll('#categoryList .category-tag');
-                appState.categories = Array.from(categoryTags).map(tag => 
-                    tag.textContent.replace('×', '').trim()
-                );
-                
-                console.log('📝 Création de la session:', appState.sessionCode);
-            } else {
-                // Joining existing session
-                appState.isCreator = false;
-                appState.sessionCode = sessionInput;
-                console.log('🔗 Connexion à la session:', appState.sessionCode);
-            }
-            
-            // Add participant locally first
-            appState.participants.add(appState.currentUser.fullName);
-            
-            // Update UI immediately
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('sessionCode').textContent = appState.sessionCode;
-            
-            populateCategories();
-            updateStats();
-            updateParticipantsList();
-            
-            // Initialize Firebase connection
-            setTimeout(() => {
-                initializeRealtimeConnection();
-            }, 500);
-            
-            showToast(`Bienvenue ${firstName} !`, 'success');
-        }
+    function filteredIdeas(){
+      const q = ($('#search').value||'').toLowerCase();
+      const cat = $('#filterCat').value;
+      return state.ideas.filter(i=>{
+        const mQ = !q || i.content.toLowerCase().includes(q) || i.author.toLowerCase().includes(q);
+        const mC = !cat || i.category===cat; return mQ && mC;
+      }).sort((a,b)=>b.timestamp-a.timestamp);
+    }
 
-        // Category Management
-        function addCategory() {
-            const input = document.getElementById('newCategory');
-            const category = input.value.trim();
-            
-            if (category && !appState.categories.includes(category)) {
-                const categoryList = document.getElementById('categoryList');
-                const tag = document.createElement('span');
-                tag.className = 'category-tag';
-                tag.innerHTML = `${category} <button onclick="removeCategory(this)">×</button>`;
-                categoryList.appendChild(tag);
-                input.value = '';
-            }
-        }
+    function renderIdeas(){
+      const list = filteredIdeas();
+      if(!list.length){ elIdeas.innerHTML = '<p class="muted" style="text-align:center">Aucune idée…</p>'; }
+      else {
+        elIdeas.innerHTML = list.map(i=>`
+          <div class="idea" data-id="${i.id}">
+            <div class="meta"><span><strong>${safe(i.author)}</strong></span><span class="chip">${safe(i.category)}</span></div>
+            <div class="content">${safe(i.content)}</div>
+            <div class="meta"><span>${new Date(i.timestamp).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}</span>
+              ${i.groupId?`<span class="chip">Groupe #${safe(i.groupId)}</span>`:`<button class="btn secondary" style="padding:6px 10px" onclick="window._group('${i.id}')">Grouper</button>`}
+            </div>
+          </div>`).join('');
+      }
+      elStatIdeas.textContent = state.ideas.length;
+    }
 
-        function removeCategory(button) {
-            button.parentElement.remove();
-        }
+    window._group = async function(id){
+      const gRef = push(ref(db, `sessions/${state.session}/groups`));
+      const group = { id: gRef.key, name: `Groupe ${state.groups.length+1}`, ideaIds: [id], createdBy: state.me.fullName, createdAt: Date.now() };
+      await set(gRef, group);
+      const idx = state.ideas.findIndex(x=>x.id===id);
+      if(idx>=0){ const ideaUpd = { ...state.ideas[idx], groupId: group.id }; await set(ref(db, `sessions/${state.session}/ideas/${id}`), ideaUpd); }
+      toast('Groupe créé','success');
+    }
 
-        function populateCategories() {
-            const categorySelect = document.getElementById('category');
-            const filterSelect = document.getElementById('filterCategory');
-            
-            categorySelect.innerHTML = appState.categories.map(cat => 
-                `<option value="${cat}">${cat}</option>`
-            ).join('');
-            
-            filterSelect.innerHTML = '<option value="">Toutes catégories</option>' + 
-                appState.categories.map(cat => 
-                    `<option value="${cat}">${cat}</option>`
-                ).join('');
-        }
+    function renderGroups(){ elStatGroups.textContent = state.groups.length; }
 
-        // Ideas Management
-        function handleAddIdea(event) {
-            event.preventDefault();
-            
-            const category = document.getElementById('category').value;
-            const content = document.getElementById('ideaContent').value.trim();
-            
-            if (!content) return;
-            
-            const idea = {
-                id: Date.now() + Math.random(),
-                author: appState.currentUser.fullName,
-                category,
-                content,
-                timestamp: new Date().toISOString(),
-                groupId: null
-            };
-            
-            appState.ideas.push(idea);
-            
-            // Clear form
-            document.getElementById('ideaContent').value = '';
-            
-            // Update UI
-            renderIdeas();
-            updateStats();
-            showToast('Idée ajoutée !', 'success');
-            
-            // Save and sync
-            saveToLocalStorage();
-            syncToFirebase('ideas', idea);
-        }
+    // === Listeners temps réel ===
+    function attachRealtimeListeners(){
+      state.listeners.forEach(u=>u&&u()); state.listeners = [];
+      const iRef = ref(db, `sessions/${state.session}/ideas`);
+      state.listeners.push(onChildAdded(iRef, s=>{ const v=s.val(); if(!state.ideas.find(x=>x.id===v.id)){ state.ideas.push(v); renderIdeas(); }}));
+      state.listeners.push(onChildChanged(iRef, s=>{ const v=s.val(); const i=state.ideas.findIndex(x=>x.id===v.id); if(i>=0){ state.ideas[i]=v; renderIdeas(); }}));
+      state.listeners.push(onChildRemoved(iRef, s=>{ const v=s.val(); state.ideas=state.ideas.filter(x=>x.id!==v.id); renderIdeas(); }));
 
-        // Render ideas
-        function renderIdeas() {
-            const container = document.getElementById('ideasContainer');
-            const filteredIdeas = getFilteredIdeas();
-            
-            if (filteredIdeas.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-light);">Aucune idée trouvée...</p>';
-                return;
-            }
-            
-            container.innerHTML = filteredIdeas
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                .map(idea => `
-                    <div class="idea-card ${idea.groupId ? 'grouped' : ''}" data-id="${idea.id}">
-                        <div class="idea-header">
-                            <span class="idea-author">${idea.author}</span>
-                            <span class="idea-category">${idea.category}</span>
-                        </div>
-                        <div class="idea-content">${escapeHtml(idea.content)}</div>
-                        <div class="idea-footer">
-                            <span class="idea-time">${formatTime(idea.timestamp)}</span>
-                            <div class="idea-actions">
-                                ${!idea.groupId ? `
-                                    <button class="group-btn" onclick="toggleIdeaForGrouping(${idea.id})">
-                                        Grouper
-                                    </button>
-                                ` : `
-                                    <span style="font-size: 11px; color: var(--warning);">
-                                        Groupe #${idea.groupId}
-                                    </span>
-                                `}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-        }
+      const pRef = ref(db, `sessions/${state.session}/participants`);
+      state.listeners.push(onValue(pRef, s=>{ const val=s.val()||{}; state.participants=new Map(Object.entries(val)); renderParticipants(); }));
 
-        // Grouping functionality
-        function toggleIdeaForGrouping(ideaId) {
-            if (selectedIdeasForGroup.has(ideaId)) {
-                selectedIdeasForGroup.delete(ideaId);
-            } else {
-                selectedIdeasForGroup.add(ideaId);
-            }
-            
-            // Update visual state
-            const card = document.querySelector(`[data-id="${ideaId}"]`);
-            card.classList.toggle('grouped');
-            
-            if (selectedIdeasForGroup.size >= 2) {
-                createGroup();
-            }
-        }
+      const gRef = ref(db, `sessions/${state.session}/groups`);
+      state.listeners.push(onValue(gRef, s=>{ const val = s.val()||{}; state.groups = Object.values(val); renderGroups(); }));
+    }
 
-        function createGroup() {
-            const groupId = Date.now();
-            const group = {
-                id: groupId,
-                name: `Groupe ${appState.groups.length + 1}`,
-                ideaIds: Array.from(selectedIdeasForGroup),
-                createdBy: appState.currentUser.fullName,
-                createdAt: new Date().toISOString()
-            };
-            
-            appState.groups.push(group);
-            
-            // Update ideas with group ID
-            appState.ideas.forEach(idea => {
-                if (selectedIdeasForGroup.has(idea.id)) {
-                    idea.groupId = groupId;
-                }
-            });
-            
-            selectedIdeasForGroup.clear();
-            
-            renderIdeas();
-            renderGroups();
-            updateStats();
-            showToast('Groupe créé !', 'success');
-            
-            saveToLocalStorage();
-            syncToFirebase('groups', group);
-        }
+    function updateStats(){
+      elStatIdeas.textContent = state.ideas.length;
+      elStatParticipants.textContent = state.participants.size || 0;
+      elStatGroups.textContent = state.groups.length;
+    }
 
-        function renderGroups() {
-            const container = document.getElementById('groupsContainer');
-            
-            if (appState.groups.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-light);">Aucun groupe créé...</p>';
-                return;
-            }
-            
-            container.innerHTML = appState.groups.map(group => {
-                const groupIdeas = appState.ideas.filter(idea => 
-                    group.ideaIds.includes(idea.id)
-                );
-                
-                return `
-                    <div class="group-section">
-                        <div class="group-header">
-                            <div class="group-title">
-                                <span>🎯</span>
-                                <span>${group.name}</span>
-                                <small style="color: var(--text-light);">(${groupIdeas.length} idées)</small>
-                            </div>
-                            <small style="color: var(--text-light);">
-                                Par ${group.createdBy}
-                            </small>
-                        </div>
-                        <div class="ideas-container" style="max-height: 200px;">
-                            ${groupIdeas.map(idea => `
-                                <div class="idea-card" style="margin-bottom: 10px;">
-                                    <div class="idea-author">${idea.author}</div>
-                                    <div class="idea-content" style="font-size: 13px;">
-                                        ${escapeHtml(idea.content)}
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Mode switching
-        function switchMode(mode) {
-            appState.mode = mode;
-            
-            // Update button states
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Show/hide sections
-            document.getElementById('ideasMode').classList.toggle('hidden', mode !== 'ideas');
-            document.getElementById('groupsMode').classList.toggle('hidden', mode !== 'groups');
-            document.getElementById('participantsMode').classList.toggle('hidden', mode !== 'participants');
-            
-            if (mode === 'groups') {
-                renderGroups();
-            }
-        }
-
-        // Filter ideas
-        function filterIdeas() {
-            renderIdeas();
-        }
-
-        function getFilteredIdeas() {
-            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-            const categoryFilter = document.getElementById('filterCategory')?.value || '';
-            
-            return appState.ideas.filter(idea => {
-                const matchesSearch = !searchTerm || 
-                    idea.content.toLowerCase().includes(searchTerm) ||
-                    idea.author.toLowerCase().includes(searchTerm);
-                const matchesCategory = !categoryFilter || idea.category === categoryFilter;
-                
-                return matchesSearch && matchesCategory;
-            });
-        }
-
-        // Stats update
-        function updateStats() {
-            document.getElementById('totalIdeas').textContent = appState.ideas.length;
-            document.getElementById('totalParticipants').textContent = appState.participants.size;
-            document.getElementById('participantCount').textContent = appState.participants.size;
-            document.getElementById('totalGroups').textContent = appState.groups.length;
-        }
-
-        // Participants list
-        function updateParticipantsList() {
-            const container = document.getElementById('participantsList');
-            container.innerHTML = Array.from(appState.participants)
-                .map(name => `<span class="participant-tag">${name}</span>`)
-                .join('');
-        }
-
-        // Local Storage (backup only)
-        function saveToLocalStorage() {
-            const dataToSave = {
-                sessionCode: appState.sessionCode,
-                ideas: appState.ideas,
-                participants: Array.from(appState.participants),
-                groups: appState.groups,
-                categories: appState.categories,
-                lastUpdated: new Date().toISOString()
-            };
-            
-            localStorage.setItem(`brainstorming_${appState.sessionCode}`, JSON.stringify(dataToSave));
-            
-            if (!appState.connected) {
-                showToast('💾 Sauvegardé localement', 'info');
-            }
-        }
-
-        function loadFromLocalStorage() {
-            // Try to load last session
-            const keys = Object.keys(localStorage).filter(k => k.startsWith('brainstorming_'));
-            if (keys.length > 0) {
-                const lastKey = keys[keys.length - 1];
-                const data = JSON.parse(localStorage.getItem(lastKey));
-                if (data && data.lastUpdated) {
-                    // Show option to restore
-                    const daysSince = Math.floor((Date.now() - new Date(data.lastUpdated)) / (1000 * 60 * 60 * 24));
-                    if (daysSince < 7) {
-                        console.log(`Session ${data.sessionCode} trouvée (il y a ${daysSince} jours)`);
-                    }
-                }
-            }
-        }
-
-        function loadSession(sessionCode) {
-            const data = localStorage.getItem(`brainstorming_${sessionCode}`);
-            if (data) {
-                const parsed = JSON.parse(data);
-                appState.ideas = parsed.ideas || [];
-                appState.participants = new Set(parsed.participants || []);
-                appState.groups = parsed.groups || [];
-                appState.categories = parsed.categories || appState.categories;
-                
-                renderIdeas();
-                updateStats();
-                showToast('Session chargée', 'success');
-            }
-        }
-
-        // Firebase Real-time sync
-        function initializeRealtimeConnection() {
-            if (!firebaseReady || !window.firebaseDB) {
-                console.log('⚠️ Firebase non disponible, utilisation du mode local');
-                updateConnectionStatus(false);
-                // Fallback to localStorage only
-                saveToLocalStorage();
-                return;
-            }
-            
-            const { database, ref, set, get, child, update } = window.firebaseDB;
-            const sessionRef = ref(database, `sessions/${appState.sessionCode}`);
-            
-            console.log('🔄 Tentative de connexion Firebase pour session:', appState.sessionCode);
-            
-            // First, check if session exists
-            get(sessionRef).then((snapshot) => {
-                if (snapshot.exists()) {
-                    // Session exists
-                    const data = snapshot.val();
-                    console.log('✅ Session trouvée:', data);
-                    
-                    if (!appState.isCreator) {
-                        // Load existing session data for joiners
-                        if (data.categories) {
-                            appState.categories = data.categories;
-                            populateCategories();
-                        }
-                        
-                        if (data.ideas) {
-                            appState.ideas = Object.values(data.ideas).map(idea => ({
-                                ...idea,
-                                id: idea.id || Date.now() + Math.random()
-                            }));
-                            renderIdeas();
-                        }
-                        
-                        if (data.participants) {
-                            Object.values(data.participants).forEach(p => {
-                                if (typeof p === 'string') {
-                                    appState.participants.add(p);
-                                }
-                            });
-                            updateParticipantsList();
-                        }
-                        
-                        if (data.groups) {
-                            appState.groups = Object.values(data.groups);
-                            renderGroups();
-                        }
-                        
-                        updateStats();
-                        showToast('✅ Connecté à la session Firebase', 'success');
-                    }
-                } else if (appState.isCreator) {
-                    // Create new session
-                    console.log('📝 Création nouvelle session Firebase');
-                    const sessionData = {
-                        createdAt: new Date().toISOString(),
-                        createdBy: appState.currentUser.fullName,
-                        categories: appState.categories,
-                        sessionCode: appState.sessionCode
-                    };
-                    
-                    set(sessionRef, sessionData).then(() => {
-                        console.log('✅ Session créée dans Firebase');
-                        showToast('✅ Session créée dans Firebase', 'success');
-                    }).catch((error) => {
-                        console.error('❌ Erreur création session:', error);
-                        showToast('Erreur: ' + error.message, 'warning');
-                    });
-                } else {
-                    // Session doesn't exist but user is trying to join
-                    console.warn('❌ Session introuvable:', appState.sessionCode);
-                    showToast('⚠️ Session introuvable, création locale', 'warning');
-                }
-                
-                // Add participant
-                const participantId = Date.now() + '_' + Math.random().toString(36).substring(2);
-                const participantRef = ref(database, `sessions/${appState.sessionCode}/participants/${participantId}`);
-                set(participantRef, appState.currentUser.fullName).then(() => {
-                    console.log('✅ Participant ajouté');
-                }).catch((error) => {
-                    console.error('❌ Erreur ajout participant:', error);
-                });
-                
-                // Set up real-time listeners
-                listenForUpdates();
-                appState.connected = true;
-                updateConnectionStatus(true);
-                
-            }).catch((error) => {
-                console.error('❌ Erreur Firebase:', error);
-                showToast('Mode local activé (Firebase indisponible)', 'warning');
-                updateConnectionStatus(false);
-            });
-        }
-
-        function syncToFirebase(type, data) {
-            if (!firebaseReady || !window.firebaseDB) {
-                console.log('Firebase non disponible pour sync');
-                return;
-            }
-            
-            const { database, ref, set } = window.firebaseDB;
-            const itemRef = ref(database, `sessions/${appState.sessionCode}/${type}/${data.id}`);
-            
-            console.log(`🔄 Sync ${type}:`, data);
-            
-            set(itemRef, data).then(() => {
-                console.log(`✅ ${type} synchronisé`);
-            }).catch((error) => {
-                console.error(`❌ Erreur sync ${type}:`, error);
-                if (error.code === 'PERMISSION_DENIED') {
-                    showToast('⚠️ Vérifiez les règles Firebase', 'warning');
-                }
-            });
-        }
-
-        function listenForUpdates() {
-            if (window.firebaseDB) {
-                const { database, ref, onValue } = window.firebaseDB;
-                const sessionRef = ref(database, `sessions/${appState.sessionCode}`);
-                
-                onValue(sessionRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        let hasUpdates = false;
-                        
-                        // Update ideas
-                        if (data.ideas) {
-                            const newIdeas = Object.values(data.ideas);
-                            if (newIdeas.length !== appState.ideas.length) {
-                                appState.ideas = newIdeas;
-                                renderIdeas();
-                                hasUpdates = true;
-                            }
-                        }
-                        
-                        // Update participants
-                        if (data.participants) {
-                            const newParticipants = new Set(Object.values(data.participants));
-                            if (newParticipants.size !== appState.participants.size) {
-                                appState.participants = newParticipants;
-                                updateParticipantsList();
-                                hasUpdates = true;
-                            }
-                        }
-                        
-                        // Update groups
-                        if (data.groups) {
-                            const newGroups = Object.values(data.groups);
-                            if (newGroups.length !== appState.groups.length) {
-                                appState.groups = newGroups;
-                                renderGroups();
-                                hasUpdates = true;
-                            }
-                        }
-                        
-                        if (hasUpdates) {
-                            updateStats();
-                        }
-                    }
-                }, (error) => {
-                    console.error('Listen error:', error);
-                    updateConnectionStatus(false);
-                });
-            }
-        }
-
-        function updateConnectionStatus(connected) {
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            
-            if (connected) {
-                dot.classList.remove('offline');
-                text.textContent = 'En ligne';
-            } else {
-                dot.classList.add('offline');
-                text.textContent = 'Mode local';
-            }
-        }
-
-        // Export functions
-        function exportJSON() {
-            const data = {
-                session: appState.sessionCode,
-                exportDate: new Date().toISOString(),
-                participants: Array.from(appState.participants),
-                ideas: appState.ideas,
-                groups: appState.groups,
-                categories: appState.categories,
-                summary: {
-                    totalIdeas: appState.ideas.length,
-                    totalParticipants: appState.participants.size,
-                    totalGroups: appState.groups.length,
-                    ideasByCategory: getCategorySummary(),
-                    ideasByAuthor: getAuthorSummary()
-                }
-            };
-            
-            downloadFile(JSON.stringify(data, null, 2), `pole-mission-${appState.sessionCode}.json`, 'application/json');
-        }
-
-        function exportCSV() {
-            const headers = ['Auteur', 'Catégorie', 'Idée', 'Groupe', 'Date/Heure'];
-            const rows = appState.ideas.map(idea => {
-                const group = appState.groups.find(g => g.ideaIds.includes(idea.id));
-                return [
-                    idea.author,
-                    idea.category,
-                    `"${idea.content.replace(/"/g, '""')}"`,
-                    group ? group.name : '',
-                    formatTime(idea.timestamp)
-                ];
-            });
-            
-            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-            downloadFile('\ufeff' + csv, `pole-mission-${appState.sessionCode}.csv`, 'text/csv;charset=utf-8');
-        }
-
-        function exportText() {
-            let text = `PÔLE MISSION - BRAINSTORMING COLLABORATIF\n`;
-            text += `${'='.repeat(50)}\n\n`;
-            text += `Session: ${appState.sessionCode}\n`;
-            text += `Date d'export: ${new Date().toLocaleString('fr-FR')}\n`;
-            text += `Participants (${appState.participants.size}): ${Array.from(appState.participants).join(', ')}\n`;
-            text += `Total d'idées: ${appState.ideas.length}\n`;
-            text += `Groupes créés: ${appState.groups.length}\n`;
-            text += '\n' + '='.repeat(50) + '\n';
-            
-            // Ideas by category
-            const categorizedIdeas = {};
-            appState.ideas.forEach(idea => {
-                if (!categorizedIdeas[idea.category]) {
-                    categorizedIdeas[idea.category] = [];
-                }
-                categorizedIdeas[idea.category].push(idea);
-            });
-            
-            text += '\n### IDÉES PAR CATÉGORIE\n\n';
-            for (const [category, ideas] of Object.entries(categorizedIdeas)) {
-                text += `\n${category.toUpperCase()} (${ideas.length} idées)\n${'-'.repeat(30)}\n`;
-                ideas.forEach(idea => {
-                    text += `\n• ${idea.content}\n`;
-                    text += `  Par: ${idea.author} | ${formatTime(idea.timestamp)}\n`;
-                });
-            }
-            
-            // Groups
-            if (appState.groups.length > 0) {
-                text += '\n\n### GROUPES D\'IDÉES SIMILAIRES\n\n';
-                appState.groups.forEach(group => {
-                    text += `\n${group.name}\n${'-'.repeat(30)}\n`;
-                    const groupIdeas = appState.ideas.filter(idea => 
-                        group.ideaIds.includes(idea.id)
-                    );
-                    groupIdeas.forEach(idea => {
-                        text += `• ${idea.content} (${idea.author})\n`;
-                    });
-                });
-            }
-            
-            downloadFile(text, `pole-mission-${appState.sessionCode}.txt`, 'text/plain;charset=utf-8');
-        }
-
-        // Utility functions
-        function getCategorySummary() {
-            const summary = {};
-            appState.ideas.forEach(idea => {
-                summary[idea.category] = (summary[idea.category] || 0) + 1;
-            });
-            return summary;
-        }
-
-        function getAuthorSummary() {
-            const summary = {};
-            appState.ideas.forEach(idea => {
-                summary[idea.author] = (summary[idea.author] || 0) + 1;
-            });
-            return summary;
-        }
-
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleString('fr-FR', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                day: '2-digit',
-                month: '2-digit'
-            });
-        }
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        function downloadFile(content, filename, type) {
-            const blob = new Blob([content], { type });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast(`Export réussi : ${filename}`, 'success');
-        }
-
-        function showFirebaseInfo() {
-            const info = `
-Firebase Status:
-- SDK chargé: ${firebaseReady ? '✅' : '❌'}
-- Connecté: ${appState.connected ? '✅' : '❌'}
-- Session: ${appState.sessionCode || 'N/A'}
-- Mode: ${appState.isCreator ? 'Créateur' : 'Participant'}
-
-Si Firebase ne fonctionne pas:
-1. Vérifiez les règles dans Firebase Console
-2. Activez "Realtime Database" dans Firebase
-3. Vérifiez la console du navigateur (F12)
-            `;
-            alert(info);
-        }
-        
-        function showToast(message, type = 'info') {
-            console.log(`[TOAST ${type}]`, message);
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.remove();
-            }, 4000);
-        }
-    </script>
+    // Exports & local save — (implémentations minimales)
+    $('#saveLocal').addEventListener('click', ()=>{
+      const key = `brainstorming_${state.session}`;
+      const payload = { session: state.session, ideas: state.ideas, groups: state.groups, participants: Array.from(state.participants.values()), categories: state.categories, ts: Date.now() };
+      localStorage.setItem(key, JSON.stringify(payload)); toast('Sauvegardé localement','success');
+    });
+    $('#expJSON').addEventListener('click', ()=>{
+      const data = { session: state.session, ideas: state.ideas, groups: state.groups, participants: Array.from(state.participants.values()), categories: state.categories };
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`pole-mission-${state.session}.json`; a.click(); URL.revokeObjectURL(url);
+    });
+    $('#expCSV').addEventListener('click', ()=>{
+      const headers = ['Auteur','Catégorie','Idée','Groupe','Horodatage'];
+      const rows = state.ideas.map(i=>[i.author,i.category,`"${(i.content||'').replace(/"/g,'""')}"`, i.groupId?`Groupe ${state.groups.find(g=>g.id===i.groupId)?.name||''}`:'', new Date(i.timestamp).toLocaleString('fr-FR')]);
+      const csv = [headers,...rows].map(r=>r.join(',')).join('\n');
+      const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`pole-mission-${state.session}.csv`; a.click(); URL.revokeObjectURL(url);
+    });
+    $('#expTXT').addEventListener('click', ()=>{
+      let text = `PÔLE MISSION — EXPORT\nSession: ${state.session}\nDate: ${new Date().toLocaleString('fr-FR')}\nParticipants: ${Array.from(state.participants.values()).join(', ')}\nIdées: ${state.ideas.length}\nGroupes: ${state.groups.length}\n\n`;
+      state.ideas.forEach(i=>{ text += `• [${i.category}] ${i.content} — ${i.author} (${new Date(i.timestamp).toLocaleString('fr-FR')})\n`; });
+      const blob = new Blob([text],{type:'text/plain;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`pole-mission-${state.session}.txt`; a.click(); URL.revokeObjectURL(url);
+    });
+  </script>
 </body>
 </html>
