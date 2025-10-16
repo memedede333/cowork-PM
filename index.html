@@ -1,151 +1,305 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Pôle Mission — Brainstorming collaboratif (Firebase)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pôle Mission - Brainstorming Collaboratif</title>
   <style>
-    *{box-sizing:border-box}
-    :root{--primary:#2C3E50;--secondary:#3498DB;--accent:#E74C3C;--success:#27AE60;--warning:#F39C12;--bg:#f5f7fb;--card:#ffffff;--muted:#7F8C8D;--border:#E5E7EB;--shadow:0 10px 30px rgba(0,0,0,.06)}
-    html,body{height:100%}
-    body{font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);margin:0;color:var(--primary)}
-    .container{max-width:980px;margin:0 auto;padding:16px}
-    .card{background:var(--card);border-radius:16px;padding:18px;margin:12px 0;box-shadow:var(--shadow)}
-    .header{position:relative;overflow:hidden}
-    .header:before{content:"";position:absolute;inset:0;height:5px;background:linear-gradient(90deg,var(--primary),var(--secondary),var(--accent))}
-    h1{margin:10px 0 4px;font-size:26px}
-    .muted{color:var(--muted)}
-    .row{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center}
-    label{font-size:13px}
-    input,select,textarea{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:14px;background:#fff}
-    textarea{min-height:90px;resize:vertical}
-    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 16px;border:0;border-radius:12px;color:#fff;background:var(--primary);cursor:pointer;font-weight:600;transition:transform .05s ease}
-    .btn:hover{transform:translateY(-1px)}
-    .btn.secondary{background:var(--secondary)}
-    .btn.success{background:var(--success)}
-    .btn.warn{background:var(--warning)}
-    .btn.ghost{background:#f3f4f6;color:var(--primary)}
-    .grid{display:grid;gap:12px}
-    .stats{grid-template-columns:repeat(3,1fr)}
-    .stat{background:#fff;border-left:4px solid var(--secondary);padding:16px;border-radius:12px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.06)}
-    .stat .v{font-size:26px;font-weight:800}
-    .chip{display:inline-flex;align-items:center;gap:8px;background:#eef2ff;border:1px solid #e5e7eb;padding:6px 10px;border-radius:999px;color:#1f2937;font-size:12px}
-    .session-badge{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-    .ideas{max-height:520px;overflow:auto}
-    .idea{background:#f9fafb;border:1px solid var(--border);border-left:4px solid var(--secondary);border-radius:12px;padding:12px;margin:10px 0}
-    .idea .meta{display:flex;justify-content:space-between;align-items:flex-start;font-size:12px;color:var(--muted)}
-    .idea .content{margin:8px 0;white-space:pre-wrap;color:#111827}
-    .idea.sel{outline:2px dashed var(--warning)}
-    .mode{display:flex;gap:8px;background:#eef2ff;border-radius:12px;padding:6px}
-    .mode .tab{flex:1;background:#fff;border:0;border-radius:8px;padding:10px;font-weight:600;cursor:pointer}
-    .mode .tab.active{box-shadow:0 2px 10px rgba(0,0,0,.07)}
-    .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--primary);color:#fff;padding:10px 18px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:999}
-    .toast.success{background:var(--success)}
-    .toast.warn{background:var(--warning)}
-    .status{position:fixed;top:10px;right:10px;background:#fff;border-radius:999px;box-shadow:0 6px 16px rgba(0,0,0,.08);padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:12px}
-    .dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
-    .dot.off{background:var(--accent)}
-    @media (max-width:640px){.row{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #2C3E50;
+      --secondary: #3498DB;
+      --accent: #E74C3C;
+      --success: #27AE60;
+      --warning: #F39C12;
+      --bg-light: #ECF0F1;
+      --bg-dark: #34495E;
+      --text-dark: #2C3E50;
+      --text-light: #7F8C8D;
+      --border: #BDC3C7;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      padding: 10px;
+      color: var(--text-dark);
+    }
+
+    .container { max-width: 600px; margin: 0 auto; }
+
+    .app-header { background: white; border-radius: 20px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 30px var(--shadow); text-align: center; position: relative; overflow: hidden; }
+    .app-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent)); animation: gradientShift 3s ease infinite; }
+    @keyframes gradientShift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
+    .app-header h1 { font-size: 24px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .app-header p { color: var(--text-light); font-size: 14px; }
+
+    .session-badge { background: var(--primary); color: white; padding: 12px 20px; border-radius: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(44, 62, 80, 0.2); }
+    .session-code { font-size: 18px; font-weight: bold; letter-spacing: 2px; }
+    .live-indicator { display: flex; align-items: center; gap: 8px; }
+    .live-dot { width: 8px; height: 8px; background: #27AE60; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px var(--shadow); animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; color: var(--text-dark); font-weight: 500; font-size: 14px; }
+
+    input, textarea, select { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 10px; font-size: 15px; transition: all 0.3s; background: white; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1); }
+    textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+
+    .btn { background: var(--primary); color: white; border: none; padding: 14px 25px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:hover { background: var(--bg-dark); transform: translateY(-2px); box-shadow: 0 5px 20px rgba(44, 62, 80, 0.3); }
+    .btn-secondary { background: var(--secondary); }
+    .btn-secondary:hover { background: #2980B9; }
+    .btn-success { background: var(--success); }
+    .btn-success:hover { background: #229954; }
+    .btn-small { padding: 8px 16px; font-size: 13px; width: auto; }
+
+    .category-manager { background: var(--bg-light); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+    .category-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .category-tag { background: var(--primary); color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+    .category-tag button { background: none; border: none; color: white; cursor: pointer; font-size: 16px; padding: 0; margin: 0; line-height: 1; }
+
+    .add-category-form { display: flex; gap: 8px; }
+    .add-category-form input { flex: 1; padding: 8px 12px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-card { background: white; padding: 20px; border-radius: 12px; text-align: center; border-left: 4px solid var(--secondary); box-shadow: 0 3px 10px var(--shadow); }
+    .stat-value { font-size: 28px; font-weight: bold; color: var(--primary); display: block; }
+    .stat-label { font-size: 12px; color: var(--text-light); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .ideas-container { max-height: 500px; overflow-y: auto; padding-right: 5px; }
+    .ideas-container::-webkit-scrollbar { width: 5px; }
+    .ideas-container::-webkit-scrollbar-track { background: var(--bg-light); border-radius: 10px; }
+    .ideas-container::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 10px; }
+
+    .idea-card { background: var(--bg-light); border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--secondary); transition: all 0.3s; position: relative; }
+    .idea-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px var(--shadow); }
+    .idea-card.grouped { border-left-color: var(--accent); background: #FEF5E7; }
+    .idea-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .idea-author { font-weight: 600; color: var(--primary); font-size: 14px; }
+    .idea-category { background: var(--secondary); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; text-transform: uppercase; }
+    .idea-content { color: var(--text-dark); line-height: 1.6; margin-bottom: 10px; }
+    .idea-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .idea-time { font-size: 11px; color: var(--text-light); }
+    .idea-actions { display: flex; gap: 8px; }
+    .group-btn { background: var(--warning); color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.3s; }
+    .group-btn:hover { background: #E67E22; }
+
+    .group-section { background: #FEF5E7; border: 2px dashed var(--warning); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+    .group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .group-title { font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+
+    .participants-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .participant-tag { background: white; color: var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 13px; border: 2px solid var(--primary); }
+
+    .filter-section { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-section input, .filter-section select { flex: 1; min-width: 150px; }
+
+    .export-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
+
+    .mode-selector { display: flex; gap: 10px; margin-bottom: 20px; background: var(--bg-light); padding: 5px; border-radius: 10px; }
+    .mode-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-dark); border-radius: 8px; cursor: pointer; transition: all 0.3s; font-weight: 500; }
+    .mode-btn.active { background: white; box-shadow: 0 2px 8px var(--shadow); }
+
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 12px 24px; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); animation: slideUpToast 0.5s ease; z-index: 1000; }
+    .toast.success { background: var(--success); }
+    .toast.warning { background: var(--warning); }
+    @keyframes slideUpToast { from { opacity: 0; transform: translateX(-50%) translateY(50px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+    .connection-status { position: fixed; top: 10px; right: 10px; background: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 10px var(--shadow); display: flex; align-items: center; gap: 8px; font-size: 12px; z-index: 100; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+    .status-dot.offline { background: var(--accent); }
+
+    .hidden { display: none; }
+
+    @media (max-width: 480px) {
+      .app-header h1 { font-size: 20px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .filter-section { flex-direction: column; }
+      .export-section { grid-template-columns: 1fr; }
+    }
+
+    .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div class="status"><span class="dot" id="dot"></span><span id="statusTxt">Vérification…</span></div>
+  <div class="connection-status" onclick="showFirebaseInfo()">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Vérification...</span>
+  </div>
+
   <div class="container">
-    <div class="card header">
+    <div class="app-header">
       <h1>🎯 Pôle Mission</h1>
-      <div class="muted">Brainstorming collaboratif en temps réel (Firebase RTDB)</div>
+      <p>Brainstorming Collaboratif</p>
     </div>
 
-    <!-- Connexion / Création de session -->
-    <div class="card" id="loginCard">
-      <h3 style="margin:0 0 12px">Rejoindre une session</h3>
-      <form id="loginForm">
-        <div class="grid">
-          <div class="row"><label>Prénom</label><input id="firstName" required/></div>
-          <div class="row"><label>Nom</label><input id="lastName" required/></div>
-          <div class="row"><label>Code session (vide = créer)</label><input id="sessionInput" maxlength="6" style="text-transform:uppercase"/></div>
+    <!-- Login Section -->
+    <div id="loginSection" class="card">
+      <h2 style="margin-bottom: 20px; color: var(--primary);">Rejoindre une session</h2>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" id="firstName" required>
         </div>
-        <div id="creatorOpts" class="card" style="margin-top:12px;display:none">
-          <div class="muted" style="margin-bottom:6px">Catégories</div>
-          <div id="catTags" style="display:flex;flex-wrap:wrap;gap:8px">
-            <span class="chip">Général</span>
-            <span class="chip">Innovation</span>
-            <span class="chip">Amélioration</span>
-            <span class="chip">Problème</span>
-            <span class="chip">Solution</span>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" id="lastName" required>
+        </div>
+        <div class="form-group">
+          <label>Code session (laisser vide pour créer)</label>
+          <input type="text" id="sessionInput" maxlength="6" style="text-transform: uppercase;">
+        </div>
+
+        <div id="sessionCreatorOptions" class="hidden">
+          <div class="form-group">
+            <label>⚙️ Personnaliser les catégories</label>
+            <div class="category-manager">
+              <div class="category-list" id="categoryList">
+                <span class="category-tag">Général <button onclick="removeCategory(this)">×</button></span>
+                <span class="category-tag">Innovation <button onclick="removeCategory(this)">×</button></span>
+                <span class="category-tag">Amélioration <button onclick="removeCategory(this)">×</button></span>
+                <span class="category-tag">Problème <button onclick="removeCategory(this)">×</button></span>
+                <span class="category-tag">Solution <button onclick="removeCategory(this)">×</button></span>
+              </div>
+              <div class="add-category-form">
+                <input type="text" id="newCategory" placeholder="Nouvelle catégorie">
+                <button type="button" class="btn btn-small btn-secondary" onclick="addCategory()">+</button>
+              </div>
+            </div>
           </div>
-          <div style="display:flex;gap:8px;margin-top:8px"><input id="newCat" placeholder="Nouvelle catégorie"/><button type="button" class="btn secondary" id="addCat">Ajouter</button></div>
         </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button class="btn" type="submit">🚀 Démarrer</button></div>
+
+        <button type="submit" class="btn">
+          <span>🚀</span>
+          <span>Démarrer</span>
+        </button>
       </form>
     </div>
 
-    <!-- Application -->
-    <div id="app" style="display:none">
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
       <div class="session-badge">
         <div>
-          <div style="font-weight:800;font-size:18px" id="sessionCode">———</div>
-          <div class="muted">Code de session</div>
+          <div class="session-code" id="sessionCode">XXXXX</div>
+          <small style="opacity: 0.9;">Code de session</small>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <div class="chip"><span class="dot" style="width:6px;height:6px"></span> <span id="onlineCount">0</span> en ligne</div>
-          <button id="logoutBtn" class="btn ghost">Se déconnecter</button>
+        <div class="live-indicator" style="gap:12px">
+          <span class="live-dot"></span>
+          <span id="participantCount">1</span> en ligne
+          <button id="logoutBtn" class="btn btn-small btn-secondary" style="width:auto">Se déconnecter</button>
         </div>
       </div>
 
-      <div class="grid stats">
-        <div class="stat"><div class="v" id="statIdeas">0</div><div class="muted">Idées</div></div>
-        <div class="stat"><div class="v" id="statParticipants">0</div><div class="muted">Participants</div></div>
-        <div class="stat"><div class="v" id="statGroups">0</div><div class="muted">Groupes</div></div>
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-value" id="totalIdeas">0</span>
+          <span class="stat-label">Idées</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="totalParticipants">0</span>
+          <span class="stat-label">Participants</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="totalGroups">0</span>
+          <span class="stat-label">Groupes</span>
+        </div>
       </div>
 
-      <div class="mode"><button class="tab active" data-mode="ideas">💡 Idées</button><button class="tab" data-mode="groups">🎯 Groupes</button><button class="tab" data-mode="participants">👥 Participants</button><button class="tab" data-mode="admin" id="adminTab" style="display:none">🛡️ Admin</button></div>
+      <!-- Mode Selector -->
+      <div class="mode-selector">
+        <button class="mode-btn active" onclick="switchMode('ideas')">💡 Idées</button>
+        <button class="mode-btn" onclick="switchMode('groups')">🎯 Groupes</button>
+        <button class="mode-btn" onclick="switchMode('participants')">👥 Participants</button>
+        <button id="adminTab" class="mode-btn hidden" onclick="switchMode('admin')">🛡️ Admin</button>
+      </div>
 
-      <!-- Idées -->
-      <div id="ideasView">
+      <!-- Ideas Mode -->
+      <div id="ideasMode">
         <div class="card">
-          <h3 style="margin:0 0 10px">Ajouter une idée</h3>
-          <form id="ideaForm">
-            <div class="row"><label>Catégorie</label><select id="category"></select></div>
-            <div class="row"><label>Idée</label><textarea id="ideaText" placeholder="Votre idée…" required></textarea></div>
-            <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn success" type="submit">💡 Partager</button></div>
+          <h3 style="margin-bottom: 15px;">Ajouter une idée</h3>
+          <form onsubmit="handleAddIdea(event)">
+            <div class="form-group">
+              <select id="category"></select>
+            </div>
+            <div class="form-group">
+              <textarea id="ideaContent" placeholder="Votre idée..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success"><span>💡</span><span>Partager l'idée</span></button>
           </form>
         </div>
-        <div class="card" style="display:flex;gap:8px;align-items:center"><input id="search" placeholder="🔍 Rechercher…"/><select id="filterCat"><option value="">Toutes catégories</option></select><button id="groupBtn" class="btn warn" style="display:none">Créer un groupe (≥2)</button></div>
-        <div class="card"><h3 style="margin:0 0 12px">Flux d'idées</h3><div id="ideas" class="ideas"><p class="muted" style="text-align:center">Aucune idée…</p></div></div>
-      </div>
 
-      <!-- Groupes -->
-      <div id="groupsView" style="display:none">
-        <div class="card"><h3 style="margin:0 0 12px">Groupes</h3><div id="groups"></div></div>
-      </div>
+        <div class="filter-section">
+          <input type="text" id="searchInput" placeholder="🔍 Rechercher..." oninput="filterIdeas()">
+          <select id="filterCategory" onchange="filterIdeas()"></select>
+        </div>
 
-      <!-- Participants -->
-      <div id="participantsView" style="display:none">
-        <div class="card"><h3 style="margin:0 0 10px">Participants</h3><div id="participants" style="display:flex;flex-wrap:wrap;gap:8px"></div></div>
-      </div>
-
-      <!-- Admin (créateur) -->
-      <div id="adminView" style="display:none">
         <div class="card">
-          <h3 style="margin:0 12px 10px 0;display:flex;justify-content:space-between;align-items:center">Gestion de session
-            <span class="chip" id="sessionStatus">active</span>
+          <h3 style="margin-bottom: 15px;">Flux d'idées</h3>
+          <div id="ideasContainer" class="ideas-container">
+            <p style="text-align: center; color: var(--text-light);">Aucune idée pour le moment...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Groups Mode -->
+      <div id="groupsMode" class="hidden">
+        <div class="card">
+          <h3 style="margin-bottom: 15px;">Groupes d'idées similaires</h3>
+          <div id="groupsContainer">
+            <p style="text-align: center; color: var(--text-light);">Aucun groupe créé pour le moment...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Participants Mode -->
+      <div id="participantsMode" class="hidden">
+        <div class="card">
+          <h3 style="margin-bottom: 15px;">Participants actifs</h3>
+          <div id="participantsList" class="participants-list"></div>
+        </div>
+      </div>
+
+      <!-- Admin Mode -->
+      <div id="adminMode" class="hidden">
+        <div class="card">
+          <h3 style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">Gestion de session
+            <span id="sessionStatus" class="participant-tag" style="border-color:var(--secondary); color:var(--secondary);">active</span>
           </h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button id="archiveBtn" class="btn">Archiver la session</button>
-            <button id="purgeBtn" class="btn warn">Supprimer la session</button>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn" id="archiveBtn" style="width:auto;">Archiver la session</button>
+            <button class="btn btn-secondary" id="unarchiveBtn" style="width:auto;">Réactiver</button>
+            <button class="btn" id="purgeBtn" style="width:auto; background: var(--accent);">Supprimer la session</button>
           </div>
         </div>
         <div class="card">
-          <h3 style="margin:0 0 10px">Modération</h3>
+          <h3 style="margin-bottom: 12px;">Modération des participants</h3>
           <div id="moderateList"></div>
         </div>
+      </div>
+
+      <!-- Export Section -->
+      <div class="export-section">
+        <button onclick="exportJSON()" class="btn btn-secondary"><span>📥</span><span>JSON</span></button>
+        <button onclick="exportCSV()" class="btn btn-secondary"><span>📊</span><span>CSV</span></button>
+        <button onclick="exportText()" class="btn btn-secondary"><span>📝</span><span>Texte</span></button>
+        <button onclick="saveToLocalStorage()" class="btn btn-success"><span>💾</span><span>Sauvegarder</span></button>
       </div>
     </div>
   </div>
 
+  <!-- Firebase SDK (modulaire) -->
   <script type="module">
-    // ==== CONFIG FIREBASE (ton projet) ====
+    // Configuration Firebase pour Pôle Mission (bucket corrigé)
     const firebaseConfig = {
       apiKey: "AIzaSyDRJzayhxMtvijL_944zMPtMEMU8zUXRaE",
       authDomain: "coworking-67676.firebaseapp.com",
@@ -157,222 +311,246 @@
       measurementId: "G-79784W76EY"
     };
 
-    // ==== IMPORTS SDK (modulaire) ====
-    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js';
     import {
-      getDatabase, ref, push, set, get, update, remove,
-      onValue, onChildAdded, onChildChanged, onChildRemoved,
-      onDisconnect
+      getDatabase, ref, push, set, get, onValue, onChildAdded, onChildChanged, onChildRemoved,
+      update, remove, onDisconnect
     } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js';
 
-    // ==== INIT ====
-    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
 
-    // ==== ÉTAT ====
-    const state = {
-      me: null,            // {name, clientId, role}
-      session: null,
-      isCreator: false,
+    // Expose pour le script non-module
+    window.firebaseDB = { database, ref, push, set, get, onValue, onChildAdded, onChildChanged, onChildRemoved, update, remove, onDisconnect };
+    console.log('✅ Firebase connecté avec succès!');
+  </script>
+
+  <!-- App Logic -->
+  <script>
+    // ===== Helpers & State =====
+    let appState = {
+      currentUser: null,
+      sessionCode: null,
+      ideas: [],
+      participants: new Map(), // clientId -> {name, online, role}
+      groups: [],
       categories: ['Général','Innovation','Amélioration','Problème','Solution'],
-      ideas: [],           // [{id, author, category, content, timestamp, groupId}]
-      groups: [],          // [{id, name, ideaIds, createdBy, createdAt}]
-      participants: {},    // {clientId: {name, online, joinedAt, lastSeen, role}}
-      selected: new Set(),
-      listeners: [],
+      isCreator: false,
+      mode: 'ideas',
       connected: false,
       status: 'active'
     };
+    let selectedIdeasForGroup = new Set();
 
-    // ==== UTIL ====
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => Array.from(document.querySelectorAll(sel));
-    const safe = s => (s||'').toString().replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
-    function toast(msg, kind='info'){ const t=document.createElement('div'); t.className=`toast ${kind==='success'?'success':kind==='warn'?'warn':''}`; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3200); }
-    function uid(){ return Math.random().toString(36).slice(2,10); }
-    function deviceId(){ const k='pm:deviceId'; let v=localStorage.getItem(k); if(!v){ v='dev_'+uid()+uid(); localStorage.setItem(k,v);} return v; }
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const escapeHtml = (t) => (t||'').toString().replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
+    const formatTime = ts => new Date(ts).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
+    function showToast(message, type='info'){ const toast=document.createElement('div'); toast.className=`toast ${type==='success'?'success':type==='warning'?'warning':''}`; toast.textContent=message; document.body.appendChild(toast); setTimeout(()=>toast.remove(), 4000); }
 
-    // Presence indicator (SDK only, REST renvoie erreur sur /.info)
-    onValue(ref(db,'/.info/connected'), s=>{ const ok=!!s.val(); state.connected=ok; $('#dot').classList.toggle('off',!ok); $('#statusTxt').textContent= ok? 'En ligne' : 'Hors-ligne'; });
+    function updateConnectionStatus(connected){ const dot=$('#statusDot'); const text=$('#statusText'); if(connected){ dot.classList.remove('offline'); text.textContent='En ligne'; } else { dot.classList.add('offline'); text.textContent='Mode local'; } }
+    function deviceId(){ const k='pm:deviceId'; let v=localStorage.getItem(k); if(!v){ v='dev_'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10); localStorage.setItem(k,v);} return v; }
+    function clientIdFor(code){ const k=`pm:${code}:clientId`; let v=localStorage.getItem(k); if(!v){ v=deviceId(); localStorage.setItem(k,v);} return v; }
 
-    // === LOGIN FLOW ===
-    $('#sessionInput').addEventListener('input', (e)=>{ const empty=!e.target.value.trim(); state.isCreator=empty; $('#creatorOpts').style.display= empty? 'block':'none'; });
-    $('#addCat').addEventListener('click', ()=>{ const v=$('#newCat').value.trim(); if(!v) return; state.categories.push(v); const tag=document.createElement('span'); tag.className='chip'; tag.textContent=v; $('#catTags').appendChild(tag); $('#newCat').value=''; });
+    // Toggle créateur options
+    $('#sessionInput').addEventListener('input', (e)=>{ const isEmpty = e.target.value.trim()===''; $('#sessionCreatorOptions').classList.toggle('hidden', !isEmpty); if(isEmpty) appState.isCreator=true; });
 
-    $('#loginForm').addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const first=$('#firstName').value.trim(); const last=$('#lastName').value.trim(); if(!first||!last) return;
-      let code=$('#sessionInput').value.trim().toUpperCase(); if(!code){ state.isCreator=true; code=uid().toUpperCase(); }
-      state.session = code;
+    // Presence (SDK only)
+    const waitForSDK = setInterval(()=>{ if(window.firebaseDB){ clearInterval(waitForSDK); try{ const { database, ref, onValue } = window.firebaseDB; onValue(ref(database, '.info/connected'), s=>{ updateConnectionStatus(!!s.val()); }); }catch{} } }, 100);
 
-      // Build name & identity
-      const name = `${first} ${last}`;
-      const cidKey = `pm:participant:${code}`;
-      let cid = localStorage.getItem(cidKey);
-      if(!cid) { cid = deviceId(); localStorage.setItem(cidKey, cid); }
-      state.me = { name, clientId: cid, role: state.isCreator? 'creator':'participant' };
+    // Login
+    async function handleLogin(event){
+      event.preventDefault();
+      const firstName = $('#firstName').value.trim();
+      const lastName  = $('#lastName').value.trim();
+      const sessionInput = $('#sessionInput').value.trim().toUpperCase();
+      appState.currentUser = { firstName, lastName, fullName: `${firstName} ${lastName}`, joinedAt: Date.now() };
 
-      // Categories si créateur
-      if(state.isCreator){ const tags=$$('#catTags .chip').map(x=>x.textContent.trim()); if(tags.length) state.categories=tags; }
-
-      // UI
-      $('#loginCard').style.display='none'; $('#app').style.display=''; $('#sessionCode').textContent=code; populateCategories();
-
-      await ensureSession();
-      await upsertParticipant();
-      attachRealtimeListeners();
-      bindUIEvents();
-      toast(`Bienvenue ${first} !`,'success');
-    });
-
-    function populateCategories(){ $('#category').innerHTML= state.categories.map(c=>`<option value="${c}">${c}</option>`).join(''); $('#filterCat').innerHTML= '<option value="">Toutes catégories</option>'+ state.categories.map(c=>`<option value="${c}">${c}</option>`).join(''); }
-
-    // === SESSION ===
-    async function ensureSession(){
-      const sRef = ref(db, `sessions/${state.session}`);
-      const snap = await get(sRef);
-      if(!snap.exists() && state.isCreator){
-        await set(sRef, { sessionCode: state.session, createdAt: Date.now(), createdBy: state.me.name, categories: state.categories, status:'active', lastActivity: Date.now() });
-      } else if(snap.exists()){
-        const data = snap.val(); state.status = data.status||'active'; if(data.categories) state.categories=data.categories; populateCategories();
-        if(data.ideas) state.ideas = Object.values(data.ideas);
-        if(data.groups) state.groups = Object.values(data.groups);
-        if(data.participants) state.participants = data.participants;
-        renderIdeas(); renderGroups(); renderParticipants(); updateStats();
-        if((data.createdBy||'')===state.me.name) state.isCreator=true; // si le créateur se reconnecte
+      if(!sessionInput){
+        appState.isCreator = true;
+        appState.sessionCode = Math.random().toString(36).substring(2,8).toUpperCase();
+        const tags = $$('#categoryList .category-tag').map(x=>x.textContent.replace('×','').trim());
+        if(tags.length) appState.categories = tags;
+        console.log('📝 Création de la session:', appState.sessionCode);
+      } else {
+        appState.isCreator = false;
+        appState.sessionCode = sessionInput;
+        console.log('🔗 Connexion à la session:', appState.sessionCode);
       }
-      if(state.isCreator) $('#adminTab').style.display='';
-      $('#sessionStatus').textContent = state.status;
+
+      $('#loginSection').classList.add('hidden');
+      $('#mainApp').classList.remove('hidden');
+      $('#sessionCode').textContent = appState.sessionCode;
+
+      populateCategories();
+      updateStats();
+      updateParticipantsList();
+
+      await initializeRealtimeConnection();
+      showToast(`Bienvenue ${firstName} !`, 'success');
     }
+    window.handleLogin = handleLogin;
 
-    // === PARTICIPANTS (présence + modération) ===
-    async function upsertParticipant(){
-      const pRef = ref(db, `sessions/${state.session}/participants/${state.me.clientId}`);
-      await set(pRef, { name: state.me.name, online: true, joinedAt: Date.now(), lastSeen: Date.now(), role: state.me.role });
-      // Presence auto à la déconnexion
-      onDisconnect(pRef).update({ online:false, lastSeen: Date.now() });
-      update(ref(db, `sessions/${state.session}`), { lastActivity: Date.now() });
+    function addCategory(){ const input=$('#newCategory'); const c=input.value.trim(); if(c && !appState.categories.includes(c)){ const tag=document.createElement('span'); tag.className='category-tag'; tag.innerHTML=`${c} <button onclick="removeCategory(this)">×</button>`; $('#categoryList').appendChild(tag); input.value=''; } }
+    window.addCategory = addCategory;
+    window.removeCategory = (btn)=> btn.parentElement.remove();
+
+    function populateCategories(){ $('#category').innerHTML = appState.categories.map(cat=>`<option value="${cat}">${cat}</option>`).join(''); $('#filterCategory').innerHTML = '<option value="">Toutes catégories</option>'+ appState.categories.map(cat=>`<option value="${cat}">${cat}</option>`).join(''); }
+
+    async function handleAddIdea(event){
+      event.preventDefault();
+      const category = $('#category').value;
+      const content  = $('#ideaContent').value.trim();
+      if(!content) return;
+      const { database, ref, push, set, update } = window.firebaseDB;
+      const iRef = push(ref(database, `sessions/${appState.sessionCode}/ideas`));
+      const idea = { id: iRef.key, author: appState.currentUser.fullName, category, content, timestamp: Date.now(), groupId: null };
+      await set(iRef, idea);
+      $('#ideaContent').value='';
+      await update(ref(database, `sessions/${appState.sessionCode}`), { lastActivity: Date.now() });
+      showToast('Idée ajoutée !', 'success');
     }
-
-    function renderParticipants(){
-      const list = Object.entries(state.participants||{});
-      const online = list.filter(([,p])=>p.online).length;
-      $('#onlineCount').textContent = online;
-      $('#statParticipants').textContent = list.length;
-      $('#participants').innerHTML = list.map(([id,p])=>`<span class="chip" title="${id}">${safe(p.name)}${p.online?' •':' (hors-ligne)'}${p.role==='creator'?' — créateur':''}</span>`).join('');
-      // Admin/modération list
-      if(state.isCreator){
-        $('#moderateList').innerHTML = list.map(([id,p])=>`
-          <div class="idea" style="display:flex;justify-content:space-between;align-items:center">
-            <div>${safe(p.name)} ${p.online?'•':''} <span class="muted">${id}</span></div>
-            <div style="display:flex;gap:6px">
-              ${id!==state.me.clientId?`<button class="btn warn" onclick="window._kick('${id}')">Retirer</button>`:''}
-            </div>
-          </div>`).join('');
-      }
-    }
-
-    window._kick = async (id)=>{
-      if(!state.isCreator) return;
-      await remove(ref(db, `sessions/${state.session}/participants/${id}`));
-      toast('Participant retiré','success');
-    }
-
-    $('#logoutBtn').addEventListener('click', async ()=>{
-      if(!state.me) return; await update(ref(db, `sessions/${state.session}/participants/${state.me.clientId}`), { online:false, lastSeen: Date.now() }); toast('Déconnecté','success'); location.reload();
-    });
-
-    // === IDÉES ===
-    $('#ideaForm').addEventListener('submit', async (e)=>{
-      e.preventDefault(); const content=$('#ideaText').value.trim(); if(!content) return; const category=$('#category').value;
-      const iRef = push(ref(db, `sessions/${state.session}/ideas`));
-      const idea = { id:iRef.key, author:state.me.name, category, content, timestamp: Date.now(), groupId:null };
-      await set(iRef, idea); $('#ideaText').value=''; update(ref(db,`sessions/${state.session}`),{ lastActivity: Date.now() }); toast('Idée ajoutée !','success');
-    });
-
-    $('#search').addEventListener('input', renderIdeas); $('#filterCat').addEventListener('change', renderIdeas);
-
-    function filteredIdeas(){
-      const q=($('#search').value||'').toLowerCase(); const c=$('#filterCat').value; const arr = state.ideas.slice().sort((a,b)=>b.timestamp-a.timestamp);
-      return arr.filter(i=>(!q || i.content.toLowerCase().includes(q) || i.author.toLowerCase().includes(q)) && (!c || i.category===c));
-    }
+    window.handleAddIdea = handleAddIdea;
 
     function renderIdeas(){
-      const list = filteredIdeas();
-      const container = $('#ideas');
-      if(!list.length){ container.innerHTML = '<p class="muted" style="text-align:center">Aucune idée…</p>'; }
-      else {
-        container.innerHTML = list.map(i=>`
-          <div class="idea ${state.selected.has(i.id)?'sel':''}" data-id="${i.id}">
-            <div class="meta"><span><strong>${safe(i.author)}</strong></span><span class="chip">${safe(i.category)}</span></div>
-            <div class="content">${safe(i.content)}</div>
-            <div class="meta">
-              <span>${new Date(i.timestamp).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}</span>
-              <span style="display:flex;gap:6px;align-items:center">
-                <label class="chip"><input type="checkbox" ${state.selected.has(i.id)?'checked':''} onchange="window._sel('${i.id}',this.checked)"/> sélectionner</label>
-                ${i.groupId?`<span class="chip">Groupe #${safe(i.groupId)}</span>`:''}
-              </span>
+      const container = $('#ideasContainer');
+      const search = ($('#searchInput')?.value||'').toLowerCase();
+      const cat    = $('#filterCategory')?.value||'';
+      const list = appState.ideas.slice().sort((a,b)=>b.timestamp-a.timestamp).filter(i=>
+        (!search || i.content.toLowerCase().includes(search) || i.author.toLowerCase().includes(search)) && (!cat || i.category===cat)
+      );
+      if(!list.length){ container.innerHTML='<p style="text-align:center;color:var(--text-light);">Aucune idée trouvée...</p>'; return; }
+      container.innerHTML = list.map(idea=>`
+        <div class="idea-card ${idea.groupId?'grouped':''}" data-id="${idea.id}">
+          <div class="idea-header"><span class="idea-author">${escapeHtml(idea.author)}</span><span class="idea-category">${escapeHtml(idea.category)}</span></div>
+          <div class="idea-content">${escapeHtml(idea.content)}</div>
+          <div class="idea-footer">
+            <span class="idea-time">${formatTime(idea.timestamp)}</span>
+            <div class="idea-actions">
+              ${!idea.groupId? `<button class="group-btn" onclick="toggleIdeaForGrouping('${idea.id}')">Grouper</button>` : `<span style="font-size:11px;color:var(--warning);">Groupe #${idea.groupId}</span>`}
             </div>
-          </div>`).join('');
-      }
-      $('#statIdeas').textContent = state.ideas.length;
-      $('#groupBtn').style.display = state.selected.size>=2 ? '' : 'none';
+          </div>
+        </div>`).join('');
+      updateStats();
     }
 
-    window._sel = (id,checked)=>{ if(checked) state.selected.add(id); else state.selected.delete(id); renderIdeas(); }
+    function toggleIdeaForGrouping(id){
+      if(selectedIdeasForGroup.has(id)) selectedIdeasForGroup.delete(id); else selectedIdeasForGroup.add(id);
+      const card = document.querySelector(`[data-id="${CSS.escape(id)}"]`); if(card) card.classList.toggle('grouped');
+      if(selectedIdeasForGroup.size>=2) createGroup();
+    }
+    window.toggleIdeaForGrouping = toggleIdeaForGrouping;
 
-    $('#groupBtn').addEventListener('click', async ()=>{
-      if(state.selected.size<2) return; const ids=[...state.selected];
-      const gRef = push(ref(db, `sessions/${state.session}/groups`));
-      const group = { id:gRef.key, name:`Groupe ${state.groups.length+1}`, ideaIds: ids, createdBy: state.me.name, createdAt: Date.now() };
+    async function createGroup(){
+      const ids=[...selectedIdeasForGroup]; if(ids.length<2) return;
+      const { database, ref, push, set, update } = window.firebaseDB;
+      const gRef = push(ref(database, `sessions/${appState.sessionCode}/groups`));
+      const group = { id:gRef.key, name:`Groupe ${appState.groups.length+1}`, ideaIds: ids, createdBy: appState.currentUser.fullName, createdAt: Date.now() };
       await set(gRef, group);
-      // Marque chaque idée
-      await Promise.all(ids.map(id=> update(ref(db, `sessions/${state.session}/ideas/${id}`), { groupId: group.id })));
-      state.selected.clear(); toast('Groupe créé','success');
-    });
+      await Promise.all(ids.map(id=> update(ref(database, `sessions/${appState.sessionCode}/ideas/${id}`), { groupId: group.id })));
+      selectedIdeasForGroup.clear();
+      showToast('Groupe créé !','success');
+    }
+    window.createGroup = createGroup;
 
     function renderGroups(){
-      $('#statGroups').textContent = state.groups.length;
-      const wrap = $('#groups');
-      if(!state.groups.length){ wrap.innerHTML = '<p class="muted" style="text-align:center">Aucun groupe…</p>'; return; }
-      wrap.innerHTML = state.groups.map(g=>{
-        const gi = state.ideas.filter(i=> (g.ideaIds||[]).includes(i.id));
-        return `<div class="idea"><div class="meta"><strong>${safe(g.name)}</strong><span class="muted">${gi.length} idées</span></div>
-          <div style="margin-top:8px">${gi.map(i=>`<div class="chip" style="margin:4px 6px 0 0">${safe(i.content)}</div>`).join('')}</div></div>`;
+      const container = $('#groupsContainer');
+      if(!appState.groups.length){ container.innerHTML='<p style="text-align:center;color:var(--text-light);">Aucun groupe créé pour le moment...</p>'; return; }
+      container.innerHTML = appState.groups.map(g=>{
+        const gi = appState.ideas.filter(i=> (g.ideaIds||[]).includes(i.id));
+        return `<div class="group-section">
+          <div class="group-header">
+            <div class="group-title"><span>🎯</span><span>${escapeHtml(g.name)}</span><small style="color:var(--text-light);">(${gi.length} idées)</small></div>
+            <small style="color:var(--text-light);">Par ${escapeHtml(g.createdBy||'')}</small>
+          </div>
+          <div class="ideas-container" style="max-height:200px;">
+            ${gi.map(i=>`<div class="idea-card" style="margin-bottom:10px;"><div class="idea-author">${escapeHtml(i.author)}</div><div class="idea-content" style="font-size:13px;">${escapeHtml(i.content)}</div></div>`).join('')}
+          </div>
+        </div>`;
       }).join('');
+      updateStats();
     }
 
-    function updateStats(){ $('#statIdeas').textContent=state.ideas.length; $('#statGroups').textContent=state.groups.length; $('#statParticipants').textContent=Object.keys(state.participants||{}).length; }
+    function updateStats(){ $('#totalIdeas').textContent=appState.ideas.length; $('#totalGroups').textContent=appState.groups.length; $('#totalParticipants').textContent=appState.participants.size||0; $('#participantCount').textContent=appState.participants.size||0; }
 
-    // === LISTENERS TEMPS RÉEL ===
-    function attachRealtimeListeners(){
-      state.listeners.forEach(u=>u&&u()); state.listeners=[];
-      const base = `sessions/${state.session}`;
-      // Idées
-      const iRef = ref(db, `${base}/ideas`);
-      state.listeners.push(onChildAdded(iRef, s=>{ const v=s.val(); if(!state.ideas.find(x=>x.id===v.id)){ state.ideas.push(v); renderIdeas(); renderGroups(); updateStats(); }}));
-      state.listeners.push(onChildChanged(iRef, s=>{ const v=s.val(); const i=state.ideas.findIndex(x=>x.id===v.id); if(i>=0){ state.ideas[i]=v; renderIdeas(); renderGroups(); }}));
-      state.listeners.push(onChildRemoved(iRef, s=>{ const v=s.val(); state.ideas=state.ideas.filter(x=>x.id!==v.id); renderIdeas(); renderGroups(); updateStats(); }));
-      // Groupes
-      const gRef = ref(db, `${base}/groups`);
-      state.listeners.push(onValue(gRef, s=>{ const val=s.val()||{}; state.groups=Object.values(val); renderGroups(); updateStats(); }));
+    function updateParticipantsList(){ const c=$('#participantsList'); c.innerHTML = Array.from(appState.participants.values()).map(p=>`<span class="participant-tag">${escapeHtml(p.name)}${p.online?' •':''}${p.role==='creator'?' — créateur':''}</span>`).join(''); }
+
+    // Export
+    function getCategorySummary(){ const s={}; appState.ideas.forEach(i=>{ s[i.category]=(s[i.category]||0)+1; }); return s; }
+    function getAuthorSummary(){ const s={}; appState.ideas.forEach(i=>{ s[i.author]=(s[i.author]||0)+1; }); return s; }
+    function downloadFile(content, filename, type){ const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast(`Export réussi : ${filename}`,'success'); }
+
+    function exportJSON(){ const data={ session:appState.sessionCode, exportDate:new Date().toISOString(), participants:Array.from(appState.participants.values()).map(p=>p.name), ideas:appState.ideas, groups:appState.groups, categories:appState.categories, summary:{ totalIdeas:appState.ideas.length, totalParticipants:appState.participants.size||0, totalGroups:appState.groups.length, ideasByCategory:getCategorySummary(), ideasByAuthor:getAuthorSummary() } }; downloadFile(JSON.stringify(data,null,2), `pole-mission-${appState.sessionCode}.json`, 'application/json'); }
+    function exportCSV(){ const headers=['Auteur','Catégorie','Idée','Groupe','Date/Heure']; const rows=appState.ideas.map(idea=>{ const group=appState.groups.find(g=> (g.ideaIds||[]).includes(idea.id)); return [idea.author, idea.category, '"'+idea.content.replace(/"/g,'""')+'"', group?group.name:'', formatTime(idea.timestamp)]; }); const csv=[headers,...rows].map(r=>r.join(',')).join('\n'); downloadFile('\ufeff'+csv, `pole-mission-${appState.sessionCode}.csv`, 'text/csv;charset=utf-8'); }
+    function exportText(){ let text=`PÔLE MISSION - BRAINSTORMING COLLABORATIF\n${'='.repeat(50)}\n\n`; text+=`Session: ${appState.sessionCode}\nDate d'export: ${new Date().toLocaleString('fr-FR')}\nParticipants (${appState.participants.size||0}): ${Array.from(appState.participants.values()).map(p=>p.name).join(', ')}\nTotal d'idées: ${appState.ideas.length}\nGroupes créés: ${appState.groups.length}\n\n${'='.repeat(50)}\n`; const byCat={}; appState.ideas.forEach(i=>{ (byCat[i.category]=byCat[i.category]||[]).push(i); }); text+=`\n### IDÉES PAR CATÉGORIE\n\n`; for(const [cat,ideas] of Object.entries(byCat)){ text+=`\n${cat.toUpperCase()} (${ideas.length} idées)\n${'-'.repeat(30)}\n`; ideas.forEach(i=>{ text+=`\n• ${i.content}\n  Par: ${i.author} | ${formatTime(i.timestamp)}\n`; }); } if(appState.groups.length){ text+=`\n\n### GROUPES D'IDÉES SIMILAIRES\n\n`; appState.groups.forEach(g=>{ text+=`\n${g.name}\n${'-'.repeat(30)}\n`; const gi=appState.ideas.filter(i=> (g.ideaIds||[]).includes(i.id)); gi.forEach(i=>{ text+=`• ${i.content} (${i.author})\n`; }); }); } downloadFile(text, `pole-mission-${appState.sessionCode}.txt`, 'text/plain;charset=utf-8'); }
+    window.exportJSON=exportJSON; window.exportCSV=exportCSV; window.exportText=exportText; window.saveToLocalStorage=()=>{}; // non critique ici
+
+    // Modes
+    function switchMode(mode){ appState.mode=mode; $$('.mode-btn').forEach(b=>b.classList.remove('active')); const map={ideas:'Idées',groups:'Groupes',participants:'Participants',admin:'Admin'}; const btn=[...$$('.mode-btn')].find(b=>b.textContent.includes(map[mode])); if(btn) btn.classList.add('active'); $('#ideasMode').classList.toggle('hidden', mode!=='ideas'); $('#groupsMode').classList.toggle('hidden', mode!=='groups'); $('#participantsMode').classList.toggle('hidden', mode!=='participants'); $('#adminMode').classList.toggle('hidden', mode!=='admin'); if(mode==='groups') renderGroups(); }
+    window.switchMode = switchMode;
+
+    // Admin actions
+    $('#archiveBtn').addEventListener('click', async()=>{ if(!appState.isCreator) return; const { database, ref, update } = window.firebaseDB; await update(ref(database, `sessions/${appState.sessionCode}`), { status:'archived', archivedAt: Date.now() }); showToast('Session archivée','success'); });
+    $('#unarchiveBtn').addEventListener('click', async()=>{ if(!appState.isCreator) return; const { database, ref, update } = window.firebaseDB; await update(ref(database, `sessions/${appState.sessionCode}`), { status:'active' }); showToast('Session réactivée','success'); });
+    $('#purgeBtn').addEventListener('click', async()=>{ if(!appState.isCreator) return; if(!confirm('Supprimer définitivement cette session ?')) return; const { database, ref, remove } = window.firebaseDB; await remove(ref(database, `sessions/${appState.sessionCode}`)); showToast('Session supprimée','success'); location.reload(); });
+
+    // Logout
+    $('#logoutBtn').addEventListener('click', async()=>{ const { database, ref, update } = window.firebaseDB; const cid=clientIdFor(appState.sessionCode); await update(ref(database, `sessions/${appState.sessionCode}/participants/${cid}`), { online:false, lastSeen: Date.now() }); location.reload(); });
+
+    // Firebase realtime
+    async function initializeRealtimeConnection(){
+      if(!window.firebaseDB){ updateConnectionStatus(false); return; }
+      const { database, ref, set, get, update, onValue, onChildAdded, onChildChanged, onChildRemoved, onDisconnect } = window.firebaseDB;
+      const base = `sessions/${appState.sessionCode}`;
+      const sRef = ref(database, base);
+      const snap = await get(sRef);
+      if(!snap.exists() && appState.isCreator){
+        await set(sRef, { sessionCode: appState.sessionCode, createdAt: Date.now(), createdBy: appState.currentUser.fullName, categories: appState.categories, status:'active', lastActivity: Date.now() });
+      } else if(snap.exists()){
+        const data=snap.val(); appState.status=data.status||'active'; if(data.categories) appState.categories=data.categories; if(data.ideas) appState.ideas=Object.values(data.ideas); if(data.groups) appState.groups=Object.values(data.groups);
+        if(data.participants){ appState.participants=new Map(Object.entries(data.participants).map(([id,p])=>[id, typeof p==='string'?{name:p,online:true}:{...p}])); }
+        populateCategories(); renderIdeas(); renderGroups(); updateParticipantsList(); updateStats();
+        if((data.createdBy||'')===appState.currentUser.fullName) appState.isCreator=true;
+      }
+      if(appState.isCreator) $('#adminTab').classList.remove('hidden');
+      $('#sessionStatus').textContent = appState.status;
+
+      // Participant presence
+      const cid = clientIdFor(appState.sessionCode);
+      const pRef = ref(database, `${base}/participants/${cid}`);
+      await set(pRef, { name: appState.currentUser.fullName, online: true, role: appState.isCreator?'creator':'participant', joinedAt: Date.now(), lastSeen: Date.now() });
+      onDisconnect(pRef).update({ online:false, lastSeen: Date.now() });
+
+      // Ideas listeners
+      const iRef = ref(database, `${base}/ideas`);
+      onChildAdded(iRef, s=>{ const v=s.val(); if(!appState.ideas.find(x=>x.id===v.id)){ appState.ideas.push(v); renderIdeas(); }});
+      onChildChanged(iRef, s=>{ const v=s.val(); const i=appState.ideas.findIndex(x=>x.id===v.id); if(i>=0){ appState.ideas[i]=v; renderIdeas(); }});
+      onChildRemoved(iRef, s=>{ const v=s.val(); appState.ideas=appState.ideas.filter(x=>x.id!==v.id); renderIdeas(); });
+
+      // Groups
+      const gRef = ref(database, `${base}/groups`);
+      onValue(gRef, s=>{ appState.groups = Object.values(s.val()||{}); renderGroups(); updateStats(); });
+
       // Participants
-      const pRef = ref(db, `${base}/participants`);
-      state.listeners.push(onValue(pRef, s=>{ state.participants=s.val()||{}; renderParticipants(); updateStats(); }));
-      // Session status
-      const sRef = ref(db, `${base}/status`);
-      state.listeners.push(onValue(sRef, s=>{ state.status=s.val()||'active'; $('#sessionStatus').textContent=state.status; }));
+      const partsRef = ref(database, `${base}/participants`);
+      onValue(partsRef, s=>{
+        const obj=s.val()||{}; appState.participants=new Map(Object.entries(obj).map(([id,p])=>[id, typeof p==='string'?{name:p, online:true}:p]));
+        updateParticipantsList(); updateStats();
+        // Admin moderation list
+        if(appState.isCreator){ $('#moderateList').innerHTML = Object.entries(obj).map(([id,p])=>`<div class="idea-card" style="background:#fff; border-left-color:var(--primary); display:flex;justify-content:space-between;align-items:center;">
+          <div><strong>${escapeHtml(p.name||p)}</strong> ${p.online?'•':''} <small style="color:var(--text-light)">${id}</small></div>
+          ${id!==clientIdFor(appState.sessionCode)? `<button class="group-btn" onclick="kickParticipant('${id}')">Retirer</button>`:''}
+        </div>`).join(''); }
+      });
+
+      appState.connected=true; updateConnectionStatus(true);
     }
 
-    // === ADMIN ===
-    function bindUIEvents(){
-      // Tabs
-      $$('.mode .tab').forEach(b=>b.addEventListener('click', (e)=>{ $$('.mode .tab').forEach(x=>x.classList.remove('active')); e.currentTarget.classList.add('active'); const m=e.currentTarget.dataset.mode; $('#ideasView').style.display= m==='ideas'? '' : 'none'; $('#groupsView').style.display= m==='groups'? '' : 'none'; $('#participantsView').style.display= m==='participants'? '' : 'none'; $('#adminView').style.display= m==='admin'? '' : 'none'; }));
+    async function kickParticipant(id){ if(!appState.isCreator) return; const { database, ref, remove } = window.firebaseDB; await remove(ref(database, `sessions/${appState.sessionCode}/participants/${id}`)); showToast('Participant retiré','success'); }
+    window.kickParticipant = kickParticipant;
 
-      // Admin actions
-      $('#archiveBtn')?.addEventListener('click', async ()=>{ if(!state.isCreator) return; await update(ref(db, `sessions/${state.session}`), { status:'archived', archivedAt: Date.now() }); toast('Session archivée','success'); });
-      $('#purgeBtn')?.addEventListener('click', async ()=>{ if(!state.isCreator) return; if(!confirm('Supprimer toute la session ?')) return; await remove(ref(db, `sessions/${state.session}`)); toast('Session supprimée','success'); location.reload(); });
-    }
+    function showFirebaseInfo(){ const info = `\nFirebase Status:\n- SDK chargé: ${!!window.firebaseDB ? '✅' : '❌'}\n- Connecté: ${appState.connected ? '✅' : '❌'}\n- Session: ${appState.sessionCode || 'N/A'}\n- Mode: ${appState.isCreator ? 'Créateur' : 'Participant'}\n`; alert(info); }
+    window.showFirebaseInfo = showFirebaseInfo;
   </script>
 </body>
 </html>
