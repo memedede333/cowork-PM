@@ -352,6 +352,33 @@
     function deviceId(){ const k='pm:deviceId'; let v=localStorage.getItem(k); if(!v){ v='dev_'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10); localStorage.setItem(k,v);} return v; }
     function clientIdFor(code){ const k=`pm:${code}:clientId`; let v=localStorage.getItem(k); if(!v){ v=deviceId(); localStorage.setItem(k,v);} return v; }
 
+    // Normalise un code session à 6 caractères alphanum (A–Z/0–9)
+    function normalizeSessionCode(s){
+      return (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+    }
+
+    // Génère un code aléatoire **de 6** caractères
+    function generateSessionCode(){
+      return normalizeSessionCode(Math.random().toString(36).toUpperCase()) || 'ABC123';
+    }
+
+    // Toggle créateur options
+    $('#sessionInput').addEventListener('input', (e)=>{ const isEmpty = e.target.value.trim()===''; $('#sessionCreatorOptions').classList.toggle('hidden', !isEmpty); if(isEmpty) appState.isCreator=true; e.target.value = normalizeSessionCode(e.target.value); });
+
+    // Presence (SDK only)
+    const waitForSDK = setInterval(()=>{ if(window.firebaseDB){ clearInterval(waitForSDK); try{ const { database, ref, onValue } = window.firebaseDB; onValue(ref(database, '.info/connected'), s=>{ updateConnectionStatus(!!s.val()); }); }catch{} } }, 100);
+    let selectedIdeasForGroup = new Set();
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const escapeHtml = (t) => (t||'').toString().replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
+    const formatTime = ts => new Date(ts).toLocaleString('fr-FR',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
+    function showToast(message, type='info'){ const toast=document.createElement('div'); toast.className=`toast ${type==='success'?'success':type==='warning'?'warning':''}`; toast.textContent=message; document.body.appendChild(toast); setTimeout(()=>toast.remove(), 4000); }
+
+    function updateConnectionStatus(connected){ const dot=$('#statusDot'); const text=$('#statusText'); if(connected){ dot.classList.remove('offline'); text.textContent='En ligne'; } else { dot.classList.add('offline'); text.textContent='Mode local'; } }
+    function deviceId(){ const k='pm:deviceId'; let v=localStorage.getItem(k); if(!v){ v='dev_'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10); localStorage.setItem(k,v);} return v; }
+    function clientIdFor(code){ const k=`pm:${code}:clientId`; let v=localStorage.getItem(k); if(!v){ v=deviceId(); localStorage.setItem(k,v);} return v; }
+
     // Toggle créateur options
     $('#sessionInput').addEventListener('input', (e)=>{ const isEmpty = e.target.value.trim()===''; $('#sessionCreatorOptions').classList.toggle('hidden', !isEmpty); if(isEmpty) appState.isCreator=true; });
 
@@ -363,18 +390,20 @@
       event.preventDefault();
       const firstName = $('#firstName').value.trim();
       const lastName  = $('#lastName').value.trim();
-      const sessionInput = $('#sessionInput').value.trim().toUpperCase();
+      let sessionInput = normalizeSessionCode($('#sessionInput').value.trim());
+      $('#sessionInput').value = sessionInput; // reflète la normalisation
       appState.currentUser = { firstName, lastName, fullName: `${firstName} ${lastName}`, joinedAt: Date.now() };
 
       if(!sessionInput){
         appState.isCreator = true;
-        appState.sessionCode = Math.random().toString(36).substring(2,8).toUpperCase();
+        appState.sessionCode = generateSessionCode(); // **toujours 6**
         const tags = $$('#categoryList .category-tag').map(x=>x.textContent.replace('×','').trim());
         if(tags.length) appState.categories = tags;
         console.log('📝 Création de la session:', appState.sessionCode);
       } else {
+        if(sessionInput.length !== 6){ showToast('Le code session doit faire exactement 6 caractères (A–Z/0–9).','warning'); return; }
         appState.isCreator = false;
-        appState.sessionCode = sessionInput;
+        appState.sessionCode = sessionInput; // **toujours 6**
         console.log('🔗 Connexion à la session:', appState.sessionCode);
       }
 
@@ -475,15 +504,49 @@
 
     function updateParticipantsList(){ const c=$('#participantsList'); c.innerHTML = Array.from(appState.participants.values()).map(p=>`<span class="participant-tag">${escapeHtml(p.name)}${p.online?' •':''}${p.role==='creator'?' — créateur':''}</span>`).join(''); }
 
-    // Export
+    // Export & sauvegarde locale
     function getCategorySummary(){ const s={}; appState.ideas.forEach(i=>{ s[i.category]=(s[i.category]||0)+1; }); return s; }
     function getAuthorSummary(){ const s={}; appState.ideas.forEach(i=>{ s[i.author]=(s[i.author]||0)+1; }); return s; }
     function downloadFile(content, filename, type){ const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast(`Export réussi : ${filename}`,'success'); }
 
     function exportJSON(){ const data={ session:appState.sessionCode, exportDate:new Date().toISOString(), participants:Array.from(appState.participants.values()).map(p=>p.name), ideas:appState.ideas, groups:appState.groups, categories:appState.categories, summary:{ totalIdeas:appState.ideas.length, totalParticipants:appState.participants.size||0, totalGroups:appState.groups.length, ideasByCategory:getCategorySummary(), ideasByAuthor:getAuthorSummary() } }; downloadFile(JSON.stringify(data,null,2), `pole-mission-${appState.sessionCode}.json`, 'application/json'); }
-    function exportCSV(){ const headers=['Auteur','Catégorie','Idée','Groupe','Date/Heure']; const rows=appState.ideas.map(idea=>{ const group=appState.groups.find(g=> (g.ideaIds||[]).includes(idea.id)); return [idea.author, idea.category, '"'+idea.content.replace(/"/g,'""')+'"', group?group.name:'', formatTime(idea.timestamp)]; }); const csv=[headers,...rows].map(r=>r.join(',')).join('\n'); downloadFile('\ufeff'+csv, `pole-mission-${appState.sessionCode}.csv`, 'text/csv;charset=utf-8'); }
-    function exportText(){ let text=`PÔLE MISSION - BRAINSTORMING COLLABORATIF\n${'='.repeat(50)}\n\n`; text+=`Session: ${appState.sessionCode}\nDate d'export: ${new Date().toLocaleString('fr-FR')}\nParticipants (${appState.participants.size||0}): ${Array.from(appState.participants.values()).map(p=>p.name).join(', ')}\nTotal d'idées: ${appState.ideas.length}\nGroupes créés: ${appState.groups.length}\n\n${'='.repeat(50)}\n`; const byCat={}; appState.ideas.forEach(i=>{ (byCat[i.category]=byCat[i.category]||[]).push(i); }); text+=`\n### IDÉES PAR CATÉGORIE\n\n`; for(const [cat,ideas] of Object.entries(byCat)){ text+=`\n${cat.toUpperCase()} (${ideas.length} idées)\n${'-'.repeat(30)}\n`; ideas.forEach(i=>{ text+=`\n• ${i.content}\n  Par: ${i.author} | ${formatTime(i.timestamp)}\n`; }); } if(appState.groups.length){ text+=`\n\n### GROUPES D'IDÉES SIMILAIRES\n\n`; appState.groups.forEach(g=>{ text+=`\n${g.name}\n${'-'.repeat(30)}\n`; const gi=appState.ideas.filter(i=> (g.ideaIds||[]).includes(i.id)); gi.forEach(i=>{ text+=`• ${i.content} (${i.author})\n`; }); }); } downloadFile(text, `pole-mission-${appState.sessionCode}.txt`, 'text/plain;charset=utf-8'); }
-    window.exportJSON=exportJSON; window.exportCSV=exportCSV; window.exportText=exportText; window.saveToLocalStorage=()=>{}; // non critique ici
+    function exportCSV(){ const headers=['Auteur','Catégorie','Idée','Groupe','Date/Heure']; const rows=appState.ideas.map(idea=>{ const group=appState.groups.find(g=> (g.ideaIds||[]).includes(idea.id)); return [idea.author, idea.category, '"'+(idea.content||'').replace(/"/g,'""')+'"', group?group.name:'', formatTime(idea.timestamp)]; }); const csv=[headers,...rows].map(r=>r.join(',')).join('
+'); downloadFile('﻿'+csv, `pole-mission-${appState.sessionCode}.csv`, 'text/csv;charset=utf-8'); }
+    function exportText(){ let text=`PÔLE MISSION - BRAINSTORMING COLLABORATIF
+${'='.repeat(50)}
+
+`; text+=`Session: ${appState.sessionCode}
+Date d'export: ${new Date().toLocaleString('fr-FR')}
+Participants (${appState.participants.size||0}): ${Array.from(appState.participants.values()).map(p=>p.name).join(', ')}
+Total d'idées: ${appState.ideas.length}
+Groupes créés: ${appState.groups.length}
+
+${'='.repeat(50)}
+`; const byCat={}; appState.ideas.forEach(i=>{ (byCat[i.category]=byCat[i.category]||[]).push(i); }); text+=`
+### IDÉES PAR CATÉGORIE
+
+`; for(const [cat,ideas] of Object.entries(byCat)){ text+=`
+${cat.toUpperCase()} (${ideas.length} idées)
+${'-'.repeat(30)}
+`; ideas.forEach(i=>{ text+=`
+• ${i.content}
+  Par: ${i.author} | ${formatTime(i.timestamp)}
+`; }); } if(appState.groups.length){ text+=`
+
+### GROUPES D'IDÉES SIMILAIRES
+
+`; appState.groups.forEach(g=>{ text+=`
+${g.name}
+${'-'.repeat(30)}
+`; const gi=appState.ideas.filter(i=> (g.ideaIds||[]).includes(i.id)); gi.forEach(i=>{ text+=`• ${i.content} (${i.author})
+`; }); }); } downloadFile(text, `pole-mission-${appState.sessionCode}.txt`, 'text/plain;charset=utf-8'); }
+
+    function saveToLocalStorage(){
+      const dataToSave={ sessionCode:appState.sessionCode, ideas:appState.ideas, participants:Array.from(appState.participants.values()).map(p=>p.name), groups:appState.groups, categories:appState.categories, lastUpdated:new Date().toISOString() };
+      try{ localStorage.setItem(`brainstorming_${appState.sessionCode}`, JSON.stringify(dataToSave)); showToast('💾 Sauvegardé localement','success'); }catch(e){ console.warn('LocalStorage error', e); }
+    }
+
+    window.exportJSON=exportJSON; window.exportCSV=exportCSV; window.exportText=exportText; window.saveToLocalStorage=saveToLocalStorage; // non critique ici
 
     // Modes
     function switchMode(mode){ appState.mode=mode; $$('.mode-btn').forEach(b=>b.classList.remove('active')); const map={ideas:'Idées',groups:'Groupes',participants:'Participants',admin:'Admin'}; const btn=[...$$('.mode-btn')].find(b=>b.textContent.includes(map[mode])); if(btn) btn.classList.add('active'); $('#ideasMode').classList.toggle('hidden', mode!=='ideas'); $('#groupsMode').classList.toggle('hidden', mode!=='groups'); $('#participantsMode').classList.toggle('hidden', mode!=='participants'); $('#adminMode').classList.toggle('hidden', mode!=='admin'); if(mode==='groups') renderGroups(); }
